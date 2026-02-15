@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 15, 23, 42;
+  --background-end-rgb: 30, 41, 59;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom right,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    )
+    fixed;
+  min-height: 100vh;
+}
+
+@layer components {
+  .card {
+    @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl;
+  }
+  
+  .card-hover {
+    @apply hover:bg-white/15 transition-all duration-300 hover:scale-[1.02];
+  }
+}
