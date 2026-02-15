@@ -83,8 +83,6 @@ export default function AICopilotWidget() {
             Clear
           </button>
         </div>
-      Ollama (local)</p>
-        </div>
       </div>
 
       {/* Messages */}
