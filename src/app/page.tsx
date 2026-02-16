@@ -247,7 +247,13 @@ function NewsTicker() {
   useEffect(() => {
     fetch('/api/news')
       .then(r => r.json())
-      .then(data => setNews(data.items || []))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setNews(data)
+        } else if (data.items) {
+          setNews(data.items)
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -300,9 +306,9 @@ export default function Dashboard() {
     { id: 1, title: 'Loading from Mac...', completed: false },
   ]);
 
-  // Fetch from Mac reminders server
+  // Fetch from Mac reminders server (via API proxy)
   useEffect(() => {
-    fetch('http://192.168.85.109:3456/reminders')
+    fetch('/api/reminders')
       .then(r => r.json())
       .then(data => {
         if (data && data.length > 0) {
