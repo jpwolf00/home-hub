@@ -5,6 +5,7 @@ export default function NewFeatureForm({ onAdd }: { onAdd: () => void }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +19,7 @@ export default function NewFeatureForm({ onAdd }: { onAdd: () => void }) {
       });
       setTitle('');
       setDescription('');
+      setShowForm(false);
       onAdd();
     } catch (e) {
       console.error('Failed to create:', e);
@@ -26,14 +28,26 @@ export default function NewFeatureForm({ onAdd }: { onAdd: () => void }) {
     }
   };
 
+  if (!showForm) {
+    return (
+      <button
+        onClick={() => setShowForm(true)}
+        className="rounded bg-sky-600 px-3 py-2 text-sm text-white hover:bg-sky-700"
+      >
+        + New Feature
+      </button>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg p-4 mb-4">
+    <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
       <input
         type="text"
         placeholder="Feature title..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 text-sm"
+        autoFocus
       />
       <textarea
         placeholder="Description (optional)"
@@ -42,13 +56,22 @@ export default function NewFeatureForm({ onAdd }: { onAdd: () => void }) {
         className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 text-sm"
         rows={2}
       />
-      <button
-        type="submit"
-        disabled={!title.trim() || submitting}
-        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded px-4 py-2 text-sm"
-      >
-        {submitting ? 'Adding...' : 'Add Feature'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={!title.trim() || submitting}
+          className="bg-sky-600 hover:bg-sky-700 disabled:bg-gray-600 text-white rounded px-4 py-2 text-sm"
+        >
+          {submitting ? 'Adding...' : 'Add'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowForm(false)}
+          className="bg-gray-700 hover:bg-gray-600 text-white rounded px-4 py-2 text-sm"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
