@@ -11,58 +11,56 @@ function basicAuth(user: string, pass: string): string {
   return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
 }
 
-async function caldavRequest(url: string, method: string, body: string, auth: string): Promise<{ status: number; text: string }> {
+async function caldavRequest(url: string, method: string, body: string, auth: string, depth = '1'): Promise<string> {
   const res = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Depth': '1',
+      'Depth': depth,
       'Authorization': auth,
     },
     body,
   })
-  const text = await res.text()
-  return { status: res.status, text }
+  return await res.text()
 }
 
-// Discover the principal URL for the user
+// Extract href values from XML - handles both prefixed and unprefixed namespaces
+function extractHref(xml: string): string | null {
+  const match = xml.match(/<(?:\w+:)?href[^>]*>([^<]+)<\/(?:\w+:)?href>/i)
+  return match ? match[1] : null
+}
+
+// Step 1: Discover principal URL
 async function discoverPrincipal(auth: string): Promise<string> {
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <d:propfind xmlns:d="DAV:">
-  <d:prop>
-    <d:current-user-principal/>
-  </d:prop>
+  <d:prop><d:current-user-principal/></d:prop>
 </d:propfind>`
 
-  const res = await caldavRequest('https://caldav.icloud.com/', 'PROPFIND', body, auth)
-  const match = res.text.match(/<d:current-user-principal>[\s\S]*?<d:href>([^<]+)<\/d:href>/i)
-    || res.text.match(/<D:current-user-principal>[\s\S]*?<D:href>([^<]+)<\/D:href>/i)
+  const xml = await caldavRequest('https://caldav.icloud.com/', 'PROPFIND', body, auth, '0')
+  const match = xml.match(/<(?:\w+:)?current-user-principal[^>]*>[\s\S]*?<(?:\w+:)?href[^>]*>([^<]+)<\/(?:\w+:)?href>/i)
   if (!match) throw new Error('Could not discover principal URL')
   return match[1]
 }
 
-// Discover the calendar home set
+// Step 2: Discover calendar home set
 async function discoverCalendarHome(principalUrl: string, auth: string): Promise<string> {
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-  <d:prop>
-    <c:calendar-home-set/>
-  </d:prop>
+  <d:prop><c:calendar-home-set/></d:prop>
 </d:propfind>`
 
   const fullUrl = principalUrl.startsWith('http') ? principalUrl : `https://caldav.icloud.com${principalUrl}`
-  const res = await caldavRequest(fullUrl, 'PROPFIND', body, auth)
-  const match = res.text.match(/<cal:calendar-home-set>[\s\S]*?<d:href>([^<]+)<\/d:href>/i)
-    || res.text.match(/<C:calendar-home-set>[\s\S]*?<D:href>([^<]+)<\/D:href>/i)
-    || res.text.match(/<calendar-home-set[^>]*>[\s\S]*?<href[^>]*>([^<]+)<\/href>/i)
+  const xml = await caldavRequest(fullUrl, 'PROPFIND', body, auth, '0')
+  const match = xml.match(/<(?:\w+:)?calendar-home-set[^>]*>[\s\S]*?<(?:\w+:)?href[^>]*>([^<]+)<\/(?:\w+:)?href>/i)
   if (!match) throw new Error('Could not discover calendar home set')
   return match[1]
 }
 
-// List calendars that support VTODO (reminders)
+// Step 3: List VTODO collections
 async function listReminderCollections(homeUrl: string, auth: string): Promise<Array<{ url: string; name: string }>> {
   const body = `<?xml version="1.0" encoding="utf-8"?>
-<d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:cs="http://calendarserver.org/ns/" xmlns:x="http://apple.com/ns/ical/">
+<d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
   <d:prop>
     <d:displayname/>
     <d:resourcetype/>
@@ -70,22 +68,22 @@ async function listReminderCollections(homeUrl: string, auth: string): Promise<A
   </d:prop>
 </d:propfind>`
 
-  const fullUrl = homeUrl.startsWith('http') ? homeUrl : `https://caldav.icloud.com${homeUrl}`
-  const res = await caldavRequest(fullUrl, 'PROPFIND', body, auth)
-
+  const xml = await caldavRequest(homeUrl, 'PROPFIND', body, auth)
   const collections: Array<{ url: string; name: string }> = []
-  // Split into individual responses
-  const responses = res.text.split(/<d:response>/i).slice(1)
+
+  // Split on <response> or <d:response>
+  const responses = xml.split(/<(?:\w+:)?response(?:\s[^>]*)?>/i).slice(1)
 
   for (const resp of responses) {
-    // Check if this collection supports VTODO
+    // Must support VTODO and be a calendar (not outbox/inbox)
     if (!/VTODO/i.test(resp)) continue
+    if (/schedule-inbox|schedule-outbox|notification/i.test(resp)) continue
 
-    const hrefMatch = resp.match(/<d:href>([^<]+)<\/d:href>/i)
-    const nameMatch = resp.match(/<d:displayname>([^<]*)<\/d:displayname>/i)
+    const hrefMatch = resp.match(/<(?:\w+:)?href[^>]*>([^<]+)<\/(?:\w+:)?href>/i)
+    const nameMatch = resp.match(/<(?:\w+:)?displayname[^>]*>([^<]*)<\/(?:\w+:)?displayname>/i)
     if (hrefMatch) {
       collections.push({
-        url: hrefMatch[1],
+        url: hrefMatch[1].startsWith('http') ? hrefMatch[1] : `${homeUrl.replace(/\/[^/]*\/$/, '')}/../..${hrefMatch[1]}`,
         name: nameMatch ? nameMatch[1] : 'Reminders',
       })
     }
@@ -94,7 +92,7 @@ async function listReminderCollections(homeUrl: string, auth: string): Promise<A
   return collections
 }
 
-// Fetch VTODOs from a reminder collection
+// Step 4: Fetch VTODOs from a collection
 async function fetchReminders(collectionUrl: string, auth: string): Promise<Array<{ title: string; completed: boolean }>> {
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
@@ -104,39 +102,47 @@ async function fetchReminders(collectionUrl: string, auth: string): Promise<Arra
   </d:prop>
   <c:filter>
     <c:comp-filter name="VCALENDAR">
-      <c:comp-filter name="VTODO">
-        <c:prop-filter name="STATUS">
-          <c:text-match negate-condition="yes">COMPLETED</c:text-match>
-        </c:prop-filter>
-      </c:comp-filter>
+      <c:comp-filter name="VTODO"/>
     </c:comp-filter>
   </c:filter>
 </c:calendar-query>`
 
-  const fullUrl = collectionUrl.startsWith('http') ? collectionUrl : `https://caldav.icloud.com${collectionUrl}`
-  const res = await caldavRequest(fullUrl, 'REPORT', body, auth)
-
+  const xml = await caldavRequest(collectionUrl, 'REPORT', body, auth)
   const reminders: Array<{ title: string; completed: boolean }> = []
-  const responses = res.text.split(/<d:response>/i).slice(1)
+
+  // Split on <response> tags
+  const responses = xml.split(/<(?:\w+:)?response(?:\s[^>]*)?>/i).slice(1)
 
   for (const resp of responses) {
-    const calDataMatch = resp.match(/<c:calendar-data[^>]*>([\s\S]*?)<\/c:calendar-data>/i)
-      || resp.match(/<cal:calendar-data[^>]*>([\s\S]*?)<\/cal:calendar-data>/i)
-      || resp.match(/<C:calendar-data[^>]*>([\s\S]*?)<\/C:calendar-data>/i)
-    if (!calDataMatch) continue
+    // Extract calendar data - may be in CDATA or plain text
+    const cdataMatch = resp.match(/<(?:\w+:)?calendar-data[^>]*><!\[CDATA\[([\s\S]*?)\]\]><\/(?:\w+:)?calendar-data>/i)
+    const plainMatch = resp.match(/<(?:\w+:)?calendar-data[^>]*>([\s\S]*?)<\/(?:\w+:)?calendar-data>/i)
+    const ical = cdataMatch ? cdataMatch[1] : plainMatch ? plainMatch[1] : null
+    if (!ical || !ical.includes('VTODO')) continue
 
-    const ical = calDataMatch[1]
-    const summaryMatch = ical.match(/SUMMARY[^:]*:(.+)/i)
-    const statusMatch = ical.match(/STATUS[^:]*:(.+)/i)
+    const summaryMatch = ical.match(/SUMMARY:(.+)/i)
+    const statusMatch = ical.match(/STATUS:(.+)/i)
+    const completedMatch = ical.match(/COMPLETED:/i)
 
     const title = summaryMatch ? summaryMatch[1].trim() : 'Untitled'
     const status = statusMatch ? statusMatch[1].trim().toUpperCase() : ''
-    const completed = status === 'COMPLETED'
+    const completed = status === 'COMPLETED' || !!completedMatch
 
-    reminders.push({ title, completed })
+    if (!completed) {
+      reminders.push({ title, completed: false })
+    }
   }
 
   return reminders
+}
+
+// Reconstruct full URL for a collection path using the calendar home base
+function resolveCollectionUrl(homeUrl: string, path: string): string {
+  if (path.startsWith('http')) return path
+  // homeUrl is like https://p165-caldav.icloud.com:443/67916596/calendars/
+  // path is like /67916596/calendars/xxx-xxx/
+  const urlObj = new URL(homeUrl)
+  return `${urlObj.protocol}//${urlObj.host}${path}`
 }
 
 export async function GET() {
@@ -155,23 +161,21 @@ export async function GET() {
   try {
     const auth = basicAuth(ICLOUD_EMAIL, ICLOUD_PASSWORD)
 
-    // Step 1: Discover principal
     const principalUrl = await discoverPrincipal(auth)
     console.log('Principal URL:', principalUrl)
 
-    // Step 2: Discover calendar home
     const homeUrl = await discoverCalendarHome(principalUrl, auth)
     console.log('Calendar home URL:', homeUrl)
 
-    // Step 3: List reminder collections (VTODO-supporting calendars)
     const collections = await listReminderCollections(homeUrl, auth)
-    console.log('Reminder collections:', collections.map(c => c.name))
+    console.log('Reminder collections:', collections.map(c => `${c.name} -> ${c.url}`))
 
-    // Step 4: Fetch incomplete reminders from each collection
     const allReminders: Array<{ title: string; completed: boolean; list: string }> = []
 
     for (const col of collections) {
-      const items = await fetchReminders(col.url, auth)
+      const fullUrl = resolveCollectionUrl(homeUrl, col.url)
+      console.log(`Fetching reminders from: ${col.name} at ${fullUrl}`)
+      const items = await fetchReminders(fullUrl, auth)
       for (const item of items) {
         allReminders.push({ ...item, list: col.name })
       }
