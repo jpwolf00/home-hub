@@ -306,13 +306,16 @@ export default function Dashboard() {
     { id: 1, title: 'Loading from Mac...', completed: false },
   ]);
 
-  // Fetch from Mac reminders server (via API proxy)
+  // Fetch from iCloud (or fallback to Mac)
   useEffect(() => {
-    fetch('/api/reminders')
+    fetch('/api/icloud-reminders')
       .then(r => r.json())
       .then(data => {
-        console.log('Reminders API response:', data);
+        console.log('Reminders response:', data);
         if (data && Array.isArray(data) && data.length > 0) {
+          setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
+          setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));
+        } else {
           // All reminders go to Work column
           setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
           setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));

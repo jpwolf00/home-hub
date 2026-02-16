@@ -49,7 +49,8 @@ function getReminders() {
     
     return reminders;
   } catch (e) {
-    console.error('Error:', e.message);
+    console.error('Error running AppleScript:', e.message);
+    console.error('Stack:', e.stack);
     return [];
   }
 }
