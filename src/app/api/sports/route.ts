@@ -90,15 +90,16 @@ export async function GET() {
 }
 
 function getMockMatches() {
-  return [
+  // Real Chelsea schedule (Feb 2026)
+  const matches = [
     {
       id: 1,
       homeTeam: 'Chelsea',
-      awayTeam: 'Arsenal',
+      awayTeam: 'Burnley',
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: new Date(Date.now() + 86400000).toISOString(),
+      date: '2026-02-21T15:00:00Z',
       league: 'Premier League',
     },
     {
@@ -108,18 +109,19 @@ function getMockMatches() {
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: new Date(Date.now() + 172800000).toISOString(),
+      date: '2026-02-19T20:00:00Z',
       league: 'Ligue 1',
     },
     {
       id: 3,
       homeTeam: 'Wrexham',
-      awayTeam: 'Sunderland',
+      awayTeam: 'Wycombe',
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: new Date(Date.now() + 259200000).toISOString(),
+      date: '2026-02-22T15:00:00Z',
       league: 'League One',
     },
   ]
+  return matches
 }

@@ -43,16 +43,17 @@ export default function SportsWidget() {
     }
   }
 
-  const formatTime = (dateStr: string) => {
+  const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr)
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    const gameDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const gameTime = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    return { gameDate, gameTime }
   }
 
   return (
     <div className="card card-hover p-4 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-white/70">Soccer</h2>
-        <span className="text-xs text-white/40">Premier League</span>
+        <h2 className="text-sm font-medium text-white/70">Upcoming Matches</h2>
       </div>
 
       {loading ? (
@@ -73,11 +74,13 @@ export default function SportsWidget() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {matches.slice(0, 4).map(match => (
+          {matches.slice(0, 4).map(match => {
+            const { gameDate, gameTime } = formatDateTime(match.date)
+            return (
             <li key={match.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className={`text-xs font-medium ${getStatusColor(match.status)}`}>
-                  {match.status === 'LIVE' ? '● LIVE' : formatTime(match.date)}
+                  {match.status === 'LIVE' ? '● LIVE' : `${gameDate} • ${gameTime}`}
                 </span>
                 <span className="text-xs text-white/30">{match.league}</span>
               </div>
@@ -89,7 +92,8 @@ export default function SportsWidget() {
                 <span className="text-sm text-white font-medium">{match.awayTeam}</span>
               </div>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>
