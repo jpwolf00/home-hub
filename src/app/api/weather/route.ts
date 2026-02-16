@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 
 // Open-Meteo is free, no API key needed
-// Coordinates for Morris Plains, NJ
-const LAT = 40.95
-const LON = -74.44
+// Coordinates for Lexington, KY
+const LAT = 38.04
+const LON = -84.50
 
 export async function GET() {
   try {
@@ -52,7 +52,7 @@ export async function GET() {
       humidity: current.relative_humidity_2m,
       description: weather.description,
       icon: weather.icon,
-      city: 'Morris Plains',
+      city: 'Lexington',
     })
   } catch (error) {
     console.error('Weather API error:', error)

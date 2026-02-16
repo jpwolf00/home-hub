@@ -96,9 +96,10 @@ export default function ServerDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-md border border-gray-700 bg-gray-900/50 hover:bg-gray-800 transition-colors"
+              className="p-3 rounded-lg border border-gray-700 bg-gray-900/50 hover:bg-gray-800 transition-colors text-xl"
+              aria-label="Go back"
             >
-              ←
+              ← Back
             </button>
             <h1 className="text-2xl font-bold font-mono tracking-wider">
               {server?.name || 'SERVER'}
