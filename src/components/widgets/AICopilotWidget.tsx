@@ -7,14 +7,21 @@ interface Message {
   content: string
 }
 
-export default function AICopilotWidget() {
+interface AICopilotWidgetProps {
+  collapsed?: boolean;
+}
+
+export default function AICopilotWidget({ collapsed = false }: AICopilotWidgetProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isExpanded, setIsExpanded] = useState(!collapsed)
 
-  // Load greeting on mount
+  // Load greeting on mount if expanded
   useEffect(() => {
+    if (!isExpanded) return;
+    
     fetch('/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -31,7 +38,7 @@ export default function AICopilotWidget() {
       .catch(() => {
         // Silently fail for greeting
       })
-  }, [])
+  }, [isExpanded])
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,8 +72,27 @@ export default function AICopilotWidget() {
     }
   }
 
+  if (collapsed && !isExpanded) {
+    return (
+      <div className="card p-4">
+        <button 
+          onClick={() => setIsExpanded(true)}
+          className="flex items-center gap-2 w-full text-left"
+        >
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white text-sm">🤖</span>
+          </div>
+          <div>
+            <h2 className="text-sm font-medium text-white">AI Copilot</h2>
+            <p className="text-xs text-white/40">Click to expand</p>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="card card-hover p-4 h-full flex flex-col" style={{ minHeight: '300px' }}>
+    <div className="card card-hover p-4 flex flex-col" style={{ minHeight: collapsed ? 'auto' : '300px' }}>
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
           <span className="text-white text-sm">🤖</span>
@@ -75,7 +101,15 @@ export default function AICopilotWidget() {
           <h2 className="text-sm font-medium text-white">AI Copilot</h2>
           <p className="text-xs text-white/40">Local Ollama</p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-2">
+          {collapsed && (
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="text-xs text-white/40 hover:text-white/60 transition-colors"
+            >
+              Collapse
+            </button>
+          )}
           <button
             onClick={() => setMessages([])}
             className="text-xs text-white/40 hover:text-white/60 transition-colors"
@@ -96,7 +130,7 @@ export default function AICopilotWidget() {
             <div key={i} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
               <span className={`inline-block px-3 py-2 rounded-lg text-sm ${
                 msg.role === 'user' 
-                  ? 'bg-primary-500/20 text-white' 
+                  ? 'bg-sky-500/20 text-white' 
                   : 'bg-white/10 text-white/90'
               }`}>
                 {msg.content}
@@ -124,12 +158,12 @@ export default function AICopilotWidget() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask something..."
           disabled={loading}
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:border-primary-500 disabled:opacity-50"
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:border-sky-500 disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
         >
           Send
         </button>

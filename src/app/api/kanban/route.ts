@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createFeature, readFeatures } from '@/lib/kanban-store';
+import { createFeature, getFeatures } from '@/lib/kanban-db';
 
 export async function GET() {
   try {
-    const features = await readFeatures();
+    const features = await getFeatures();
     const grouped = {
-      planned: features.filter(f => f.status === 'planned'),
-      in_progress: features.filter(f => f.status === 'in_progress'),
-      completed: features.filter(f => f.status === 'completed'),
-      on_hold: features.filter(f => f.status === 'on_hold'),
+      planned: features.filter(f => f.column === 'planned'),
+      in_progress: features.filter(f => f.column === 'in_progress'),
+      completed: features.filter(f => f.column === 'completed'),
+      on_hold: features.filter(f => f.column === 'on_hold'),
     };
     return NextResponse.json(grouped);
   } catch (error) {
@@ -20,11 +20,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description } = body;
+    const { title, description, priority } = body;
     if (!title) {
       return NextResponse.json({ error: 'Title required' }, { status: 400 });
     }
-    const feature = await createFeature(title, description);
+    const feature = await createFeature(title, description, priority);
     return NextResponse.json(feature, { status: 201 });
   } catch (error) {
     console.error('Error creating feature:', error);

@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// For local development, use SQLite. For production (Coolify), use PostgreSQL.
+// To switch: change provider and URL below, then run `npx prisma db push`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// NOTE: For PostgreSQL production deployment, use:
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model KanbanCard {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  column          String   // "planned", "in_progress", "completed", "on_hold"
+  priority        String   @default("medium") // "low", "medium", "high"
+  agentId         String?
+  linkedSessionId String?
+  tokensIn        Int      @default(0)
+  tokensOut       Int      @default(0)
+  lastPromptAt    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ServerMetric {
+  id        String   @id @default(cuid())
+  serverId  String
+  cpu       Float
+  memory    Float
+  disk      Float
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id    String @id @default("default")
+  key   String @unique
+  value String
+}
+
+model ApiCache {
+  id        String   @id @default(cuid())
+  provider  String   // "weather", "sports", "news"
+  data      String   // JSON string (SQLite doesn't support native Json)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

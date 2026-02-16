@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateFeature, deleteFeature } from '@/lib/kanban-store';
+import { updateFeature, deleteFeature, getFeatureById } from '@/lib/kanban-db';
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const feature = await getFeatureById(id);
+    if (!feature) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return NextResponse.json(feature);
+  } catch (error) {
+    console.error('Error getting feature:', error);
+    return NextResponse.json({ error: 'Failed to get feature' }, { status: 500 });
+  }
+}
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
