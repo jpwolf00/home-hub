@@ -1,4 +1,0 @@
-{
-  "/api/kanban/route": "app/api/kanban/route.js",
-  "/api/kanban/[id]/route": "app/api/kanban/[id]/route.js"
-}
