@@ -13,8 +13,8 @@ export default function Header() {
 
   const navLinks = [
     { href: '/', label: 'Dashboard' },
-    { href: '/server', label: 'Servers' },
-    { href: '/kanban', label: 'Kanban' },
+    { href: '/server', label: 'Mission Control' },
+    { href: '/kanban', label: 'Development' },
   ]
 
   return (

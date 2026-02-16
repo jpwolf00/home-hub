@@ -78,7 +78,7 @@ export function KanbanBoard() {
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <div className="text-lg font-bold tracking-wide text-zinc-100">Feature Kanban</div>
+          <div className="text-lg font-bold tracking-wide text-zinc-100">Development Tasks</div>
           <div className="text-xs text-zinc-500">Auto-refresh every 30s</div>
         </div>
         <div className="flex items-center gap-2">

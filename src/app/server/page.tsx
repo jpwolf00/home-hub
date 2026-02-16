@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ServerGrid from '@/components/ServerGrid';
 import { ServerMetrics } from '@/components/ServerCard';
+import AICopilotWidget from '@/components/widgets/AICopilotWidget';
 
 interface ApiResponse {
   servers: ServerMetrics[];
@@ -11,7 +12,7 @@ interface ApiResponse {
   lastUpdated?: string;
 }
 
-export default function ServerMonitorPage() {
+export default function MissionControlPage() {
   const [servers, setServers] = useState<ServerMetrics[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -52,7 +53,7 @@ export default function ServerMonitorPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold font-mono tracking-wider">
-            SERVER MONITOR
+            MISSION CONTROL
           </h1>
 
           <button
@@ -92,6 +93,11 @@ export default function ServerMonitorPage() {
         </div>
 
         <ServerGrid servers={servers} />
+
+        {/* AI Copilot */}
+        <div className="mt-8">
+          <AICopilotWidget />
+        </div>
       </div>
     </div>
   );
