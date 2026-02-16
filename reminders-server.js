@@ -100,6 +100,6 @@ ${reminders.length === 0 ? '<p>(no reminders)</p>' : reminders.map((r, i) =>
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`🍎 Reminders API running at http://localhost:${PORT}/reminders`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🍎 Reminders API running at http://0.0.0.0:${PORT}/reminders`);
 });
