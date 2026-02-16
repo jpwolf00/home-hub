@@ -316,10 +316,20 @@ export default function Dashboard() {
           const personal = data.filter((t: any) => !t.list?.toLowerCase().includes('work') && !t.list?.toLowerCase().includes('bd')).slice(0, 5);
           if (work.length > 0) setWorkTasks(work.map((t: any, i: number) => ({ id: i, title: t.name, completed: t.completed })));
           if (personal.length > 0) setPersonalTasks(personal.map((t: any, i: number) => ({ id: i + 100, title: t.name, completed: t.completed })));
+        } else {
+          // No reminders - use fallback
+          setWorkTasks([
+            { id: 1, title: 'Review Q1 pipeline', completed: false },
+            { id: 2, title: 'Follow up with prospects', completed: false },
+          ]);
+          setPersonalTasks([
+            { id: 3, title: 'HomeLab backup', completed: false },
+            { id: 4, title: 'Dog walk - Fauci', completed: false },
+          ]);
         }
       })
       .catch(() => {
-        // Fallback
+        // API failed - use fallback
         setWorkTasks([
           { id: 1, title: 'Review Q1 pipeline', completed: false },
           { id: 2, title: 'Follow up with prospects', completed: false },
