@@ -316,10 +316,6 @@ export default function Dashboard() {
           setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
           setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));
         } else {
-          // All reminders go to Work column
-          setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
-          setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));
-        } else {
           // No reminders - use fallback
           setWorkTasks([
             { id: 1, title: 'Review Q1 pipeline', completed: false },
