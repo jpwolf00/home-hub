@@ -2,112 +2,86 @@
 
 import { useState, useEffect } from 'react'
 
-interface Task {
-  id: string
+interface Reminder {
   title: string
   completed: boolean
-  dueDate?: string
-  priority: string
+  list?: string
 }
 
 export default function TasksWidget() {
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [reminders, setReminders] = useState<Reminder[]>([])
   const [loading, setLoading] = useState(true)
-  const [newTask, setNewTask] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTasks()
+    fetchReminders()
+    const interval = setInterval(fetchReminders, 60000)
+    return () => clearInterval(interval)
   }, [])
 
-  const fetchTasks = async () => {
+  const fetchReminders = async () => {
     try {
-      const res = await fetch('/api/tasks')
+      const res = await fetch('/api/icloud-reminders')
       const data = await res.json()
-      setTasks(data)
+      if (data.error) {
+        setError(data.needsSetup ? 'iCloud credentials not configured' : data.error)
+        setReminders([])
+      } else if (Array.isArray(data)) {
+        setReminders(data)
+        setError(null)
+      } else {
+        setError('Unexpected response format')
+        setReminders([])
+      }
     } catch (err) {
-      console.error('Failed to fetch tasks:', err)
+      console.error('Failed to fetch reminders:', err)
+      setError('Failed to connect')
     } finally {
       setLoading(false)
     }
   }
 
-  const addTask = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTask.trim()) return
-    
-    try {
-      const res = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTask }),
-      })
-      const task = await res.json()
-      setTasks([task, ...tasks])
-      setNewTask('')
-    } catch (err) {
-      console.error('Failed to add task:', err)
-    }
-  }
-
-  const toggleTask = async (id: string) => {
-    const task = tasks.find(t => t.id === id)
-    if (!task) return
-    
-    try {
-      await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !task.completed }),
-      })
-      setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
-    } catch (err) {
-      console.error('Failed to toggle task:', err)
-    }
-  }
-
-  const incompleteTasks = tasks.filter(t => !t.completed).slice(0, 6)
+  const incompleteReminders = reminders.filter(r => !r.completed).slice(0, 8)
+  const lists = [...new Set(incompleteReminders.map(r => r.list).filter(Boolean))]
 
   return (
     <div className="card card-hover p-4 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-white/70">Tasks</h2>
+        <h2 className="text-sm font-medium text-white/70">Reminders</h2>
         <span className="text-xs bg-primary-500/20 text-primary-300 px-2 py-1 rounded-full">
-          {incompleteTasks.length} left
+          {incompleteReminders.length} pending
         </span>
       </div>
 
-      {/* Add Task */}
-      <form onSubmit={addTask} className="mb-4">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a task..."
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:border-primary-500"
-        />
-      </form>
-
-      {/* Task List */}
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
             <div key={i} className="h-10 bg-white/10 rounded animate-pulse"></div>
           ))}
         </div>
-      ) : incompleteTasks.length === 0 ? (
+      ) : error ? (
+        <div className="text-center py-8 text-white/40">
+          <p className="text-sm">{error}</p>
+          {error.includes('credentials') && (
+            <p className="text-xs mt-2 text-white/30">Set ICLOUD_EMAIL and ICLOUD_APP_PASSWORD in Coolify</p>
+          )}
+        </div>
+      ) : incompleteReminders.length === 0 ? (
         <div className="text-center py-8 text-white/40">
           <p className="text-2xl mb-2">✨</p>
           <p className="text-sm">All caught up!</p>
         </div>
       ) : (
         <ul className="space-y-2">
-          {incompleteTasks.map(task => (
-            <li key={task.id} className="flex items-center gap-3 group">
-              <button
-                onClick={() => toggleTask(task.id)}
-                className="w-5 h-5 rounded-full border-2 border-white/30 hover:border-primary-500 hover:bg-primary-500/20 transition-all flex-shrink-0"
-              />
-              <span className="text-white text-sm truncate">{task.title}</span>
+          {incompleteReminders.map((reminder, idx) => (
+            <li key={idx} className="flex items-center gap-3 group">
+              <div className="w-5 h-5 rounded-full border-2 border-white/30 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="text-white text-sm truncate block">{reminder.title}</span>
+                {reminder.list && (
+                  <span className="text-white/30 text-xs">{reminder.list}</span>
+                )}
+              </div>
             </li>
           ))}
         </ul>
