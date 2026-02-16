@@ -29,22 +29,25 @@ function getReminders() {
   
   try {
     const result = execSync(`osascript -e '${script}'`, { encoding: 'utf8' });
-    const lines = result.trim().split('\n');
-    const reminders = [];
+    console.log('Raw AppleScript result:', result.substring(0, 200));
     
-    for (const line of lines) {
-      // Parse: {name:Task, completed:false, list:Personal}
-      const nameMatch = line.match(/name:([^,]+)/);
-      const completeMatch = line.match(/completed:(true|false)/);
-      const listMatch = line.match(/list:([^}]+)/);
-      
-      if (nameMatch) {
-        reminders.push({
-          title: nameMatch[1].trim(),
-          completed: completeMatch ? completeMatch[1] === 'true' : false,
-          list: listMatch ? listMatch[1].trim() : 'Unknown'
-        });
-      }
+    // Parse the AppleScript output - it returns records like {name:X, completed:Y, list:Z}
+    // We need to extract each reminder
+    const reminders: any[] = [];
+    
+    // Match patterns like name:..., completed:... 
+    const nameMatches = result.matchAll(/name:([^,}]+)/g);
+    const completeMatches = result.matchAll(/completed:(true|false)/g);
+    
+    const names = Array.from(nameMatches, m => m[1].trim());
+    const completes = Array.from(completeMatches, m => m[1] === 'true');
+    
+    for (let i = 0; i < names.length; i++) {
+      reminders.push({
+        title: names[i],
+        completed: completes[i] || false,
+        list: 'General'
+      });
     }
     
     return reminders;
