@@ -108,13 +108,16 @@ function SportsColumn() {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
+  const recentGames = matches.filter(m => m.status === 'FINISHED').slice(0, 5);
+  const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 5);
+
   return (
     <div className="flex flex-col gap-8 h-full">
       {/* Recent Scores */}
       <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
         <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Recent</h3>
         <div className="space-y-4">
-          {matches.slice(0, 4).filter(m => m.status === 'FINISHED').map((m: any) => (
+          {recentGames.map((m: any) => (
             <div key={m.id} className="flex items-center justify-between text-2xl">
               <div className="flex items-center gap-4">
                 <span className="text-green-400 text-2xl">✓</span>
@@ -124,7 +127,7 @@ function SportsColumn() {
               <span className="font-medium">{m.awayTeam}</span>
             </div>
           ))}
-          {matches.filter(m => m.status === 'FINISHED').length === 0 && (
+          {recentGames.length === 0 && (
             <div className="text-2xl text-white/40">No recent games</div>
           )}
         </div>
@@ -134,7 +137,7 @@ function SportsColumn() {
       <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
         <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Upcoming</h3>
         <div className="space-y-6">
-          {matches.filter(m => m.status === 'SCHEDULED').slice(0, 4).map((m: any) => (
+          {upcomingGames.map((m: any) => (
             <div key={m.id}>
               <div className="flex items-center justify-between text-2xl mb-2">
                 <span className="font-medium">{m.homeTeam}</span>
