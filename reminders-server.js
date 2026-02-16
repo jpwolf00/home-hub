@@ -10,85 +10,85 @@ const { execSync } = require('child_process');
 
 const PORT = 3456;
 
+// Cache reminders for 30 seconds to avoid slow AppleScript calls on every request
+let cache = { data: [], timestamp: 0 };
+const CACHE_TTL = 30000;
+
 function getReminders() {
-  // Simpler script - just get name and completed, skip list name (causes permission issues)
+  const now = Date.now();
+  if (cache.data.length > 0 && (now - cache.timestamp) < CACHE_TTL) {
+    return cache.data;
+  }
+
+  // Batch fetch: get all names and completed statuses in two calls instead of looping
   const script = `
     tell application "Reminders"
-      set reminderList to {}
-      repeat with r in every reminder
-        set reminderName to name of r
-        set remCompleted to completed of r
-        -- Only include incomplete reminders
-        if remCompleted is false then
-          set end of reminderList to {name:reminderName, completed:remCompleted, list:"General"}
-        end if
+      set allNames to name of (every reminder whose completed is false)
+      set output to ""
+      repeat with n in allNames
+        set output to output & n & "|||"
       end repeat
-      return reminderList
+      return output
     end tell
   `;
-  
+
   try {
-    const result = execSync(`osascript -e '${script}'`, { encoding: 'utf8' });
-    console.log('Raw AppleScript result:', result.substring(0, 200));
-    
-    // Parse the AppleScript output - match patterns like name:..., completed:...
+    const start = Date.now();
+    const result = execSync(`osascript -e '${script}'`, {
+      encoding: 'utf8',
+      timeout: 30000,
+    }).trim();
+    const elapsed = Date.now() - start;
+    console.log(`AppleScript completed in ${elapsed}ms`);
+
     const reminders = [];
-    const nameMatches = result.matchAll(/name:([^,}]+)/g);
-    const completeMatches = result.matchAll(/completed:(true|false)/g);
-    
-    const names = Array.from(nameMatches, m => m[1].trim());
-    const completes = Array.from(completeMatches, m => m[1] === 'true');
-    
-    for (let i = 0; i < names.length; i++) {
-      reminders.push({
-        title: names[i],
-        completed: completes[i] || false,
-        list: 'General'
-      });
+    if (result.length > 0) {
+      const names = result.split('|||').filter(n => n.trim().length > 0);
+      for (const name of names) {
+        reminders.push({
+          title: name.trim(),
+          completed: false,
+          list: 'General',
+        });
+      }
     }
-    
+
+    cache = { data: reminders, timestamp: now };
     return reminders;
   } catch (e) {
     console.error('Error running AppleScript:', e.message);
-    console.error('Stack:', e.stack);
+    // Return stale cache if available
+    if (cache.data.length > 0) return cache.data;
     return [];
   }
 }
 
+// Pre-fetch on startup so the first request is fast
+setTimeout(() => {
+  console.log('Pre-fetching reminders...');
+  const reminders = getReminders();
+  console.log(`Cached ${reminders.length} reminders on startup`);
+}, 1000);
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
-  
+
   if (req.url === '/reminders') {
     const reminders = getReminders();
-    
-    // Log to terminal
-    console.log('\n📋 Reminders fetched:');
-    console.log('==================');
-    if (reminders.length === 0) {
-      console.log('(no reminders found)');
-    } else {
-      reminders.forEach((r, i) => {
-        console.log(`${i + 1}. [${r.completed ? '✓' : ' '}] ${r.title} (${r.list})`);
-      });
-    }
-    console.log('==================\n');
-    
+    console.log(`📋 Served ${reminders.length} reminders`);
     res.end(JSON.stringify(reminders));
   } else if (req.url === '/health') {
-    res.end(JSON.stringify({ status: 'ok' }));
+    res.end(JSON.stringify({ status: 'ok', cached: cache.data.length }));
   } else if (req.url === '/' || req.url === '/index.html') {
-    // Simple HTML page showing reminders
     const reminders = getReminders();
     const html = `<!DOCTYPE html>
 <html>
 <head><title>Mac Reminders</title></head>
 <body style="font-family: monospace; padding: 20px;">
-<h1>🍎 Mac Reminders</h1>
-<pre>${JSON.stringify(reminders, null, 2)}</pre>
-<h2>Formatted:</h2>
-${reminders.length === 0 ? '<p>(no reminders)</p>' : reminders.map((r, i) => 
-  `<p>${i+1}. [${r.completed ? '✓' : ' '}] ${r.title} (${r.list})</p>`
+<h1>🍎 Mac Reminders (${reminders.length})</h1>
+${reminders.length === 0 ? '<p>(no reminders)</p>' : reminders.map((r, i) =>
+  `<p>${i+1}. ${r.title}</p>`
 ).join('')}
 </body>
 </html>`;
