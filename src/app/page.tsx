@@ -293,16 +293,37 @@ function NewsTicker() {
 
 export default function Dashboard() {
   const [workTasks, setWorkTasks] = useState([
-    { id: 1, title: 'Review Q1 pipeline', completed: false },
-    { id: 2, title: 'Follow up with prospects', completed: false },
-    { id: 3, title: 'Update CRM records', completed: true },
+    { id: 1, title: 'Loading from Mac...', completed: false },
   ]);
 
   const [personalTasks, setPersonalTasks] = useState([
-    { id: 1, title: 'HomeLab backup', completed: false },
-    { id: 2, title: 'Rental property - fix leak', completed: false },
-    { id: 3, title: 'Dog walk - Fauci', completed: false },
+    { id: 1, title: 'Loading from Mac...', completed: false },
   ]);
+
+  // Fetch from Mac reminders server
+  useEffect(() => {
+    fetch('http://192.168.85.109:3456/reminders')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const work = data.filter((t: any) => t.list?.toLowerCase().includes('work') || t.list?.toLowerCase().includes('bd')).slice(0, 5);
+          const personal = data.filter((t: any) => !t.list?.toLowerCase().includes('work') && !t.list?.toLowerCase().includes('bd')).slice(0, 5);
+          if (work.length > 0) setWorkTasks(work.map((t: any, i: number) => ({ id: i, title: t.name, completed: t.completed })));
+          if (personal.length > 0) setPersonalTasks(personal.map((t: any, i: number) => ({ id: i + 100, title: t.name, completed: t.completed })));
+        }
+      })
+      .catch(() => {
+        // Fallback
+        setWorkTasks([
+          { id: 1, title: 'Review Q1 pipeline', completed: false },
+          { id: 2, title: 'Follow up with prospects', completed: false },
+        ]);
+        setPersonalTasks([
+          { id: 3, title: 'HomeLab backup', completed: false },
+          { id: 4, title: 'Dog walk - Fauci', completed: false },
+        ]);
+      });
+  }, []);
 
   return (
     <div
