@@ -11,12 +11,9 @@ const COLORS = {
   personal: '#FFE082',
   success: '#B4E495',
   critical: '#FFB4AB',
-  text: '#FFFFFF',
-  textSecondary: 'rgba(255,255,255,0.7)',
-  textMuted: 'rgba(255,255,255,0.5)',
 };
 
-// Clock component
+// Clock component - LARGE for display
 function Clock() {
   const [time, setTime] = useState(new Date());
 
@@ -32,7 +29,7 @@ function Clock() {
   const displayHours = hours % 12 || 12;
 
   return (
-    <span className="font-mono text-5xl tracking-tight">
+    <span className="font-mono text-8xl tracking-tight font-medium">
       {displayHours}:{String(minutes).padStart(2, '0')} {ampm}
     </span>
   );
@@ -54,10 +51,10 @@ function DateDisplay() {
     year: 'numeric',
   });
 
-  return <span className="text-lg">{dateStr}</span>;
+  return <span className="text-3xl font-medium">{dateStr}</span>;
 }
 
-// Weather widget
+// Weather widget - LARGE
 function WeatherWidget() {
   const [weather, setWeather] = useState<any>(null);
 
@@ -68,7 +65,7 @@ function WeatherWidget() {
       .catch(() => {});
   }, []);
 
-  if (!weather) return <span className="text-sm text-[#fff8]">Loading...</span>;
+  if (!weather) return <span className="text-2xl text-white/50">Loading...</span>;
 
   const iconMap: Record<string, string> = {
     '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
@@ -79,17 +76,18 @@ function WeatherWidget() {
   };
 
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="text-2xl">{iconMap[weather.icon] || '🌡️'}</span>
+    <div className="flex items-center gap-6">
+      <span className="text-6xl">{iconMap[weather.icon] || '🌡️'}</span>
       <div>
-        <div className="font-medium">{weather.temp}°F {weather.description}</div>
-        <div className="text-xs text-[#fff8]">{weather.city}</div>
+        <div className="text-4xl font-medium">{weather.temp}°F</div>
+        <div className="text-xl text-white/60">{weather.description}</div>
+        <div className="text-lg text-white/40">{weather.city}</div>
       </div>
     </div>
   );
 }
 
-// Sports Column
+// Sports Column - LARGE
 function SportsColumn() {
   const [matches, setMatches] = useState<any[]>([]);
 
@@ -111,39 +109,39 @@ function SportsColumn() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-8 h-full">
       {/* Recent Scores */}
-      <div className="bg-[#2B2930] rounded-lg p-4">
-        <h3 className="text-sm font-medium text-[#fff8] mb-3 uppercase tracking-wide">Recent</h3>
-        <div className="space-y-2">
-          {matches.slice(0, 3).filter(m => m.status === 'FINISHED').map((m: any) => (
-            <div key={m.id} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-green-400">✓</span>
+      <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
+        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Recent</h3>
+        <div className="space-y-4">
+          {matches.slice(0, 4).filter(m => m.status === 'FINISHED').map((m: any) => (
+            <div key={m.id} className="flex items-center justify-between text-2xl">
+              <div className="flex items-center gap-4">
+                <span className="text-green-400 text-2xl">✓</span>
                 <span className="font-medium">{m.homeTeam}</span>
               </div>
-              <span className="font-mono">{m.homeScore} - {m.awayScore}</span>
+              <span className="font-mono text-3xl">{m.homeScore} - {m.awayScore}</span>
               <span className="font-medium">{m.awayTeam}</span>
             </div>
           ))}
           {matches.filter(m => m.status === 'FINISHED').length === 0 && (
-            <div className="text-sm text-[#fff6]">No recent games</div>
+            <div className="text-2xl text-white/40">No recent games</div>
           )}
         </div>
       </div>
 
       {/* Upcoming */}
-      <div className="bg-[#2B2930] rounded-lg p-4">
-        <h3 className="text-sm font-medium text-[#fff8] mb-3 uppercase tracking-wide">Upcoming</h3>
-        <div className="space-y-3">
-          {matches.filter(m => m.status === 'SCHEDULED').slice(0, 3).map((m: any) => (
+      <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
+        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Upcoming</h3>
+        <div className="space-y-6">
+          {matches.filter(m => m.status === 'SCHEDULED').slice(0, 4).map((m: any) => (
             <div key={m.id}>
-              <div className="flex items-center justify-between text-sm mb-1">
+              <div className="flex items-center justify-between text-2xl mb-2">
                 <span className="font-medium">{m.homeTeam}</span>
-                <span className="text-xs text-[#fff8]">vs</span>
+                <span className="text-lg text-white/50">vs</span>
                 <span className="font-medium">{m.awayTeam}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-[#fff8]">
+              <div className="flex items-center justify-between text-xl text-white/50">
                 <span>{formatDate(m.date)}</span>
                 <span>{formatTime(m.date)}</span>
               </div>
@@ -155,35 +153,35 @@ function SportsColumn() {
   );
 }
 
-// Tasks Column
+// Tasks Column - LARGE
 function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[], accentColor: string }) {
   return (
-    <div className="bg-[#2B2930] rounded-lg p-4 h-full">
-      <h3 className="text-sm font-medium mb-4 uppercase tracking-wide flex items-center gap-2">
-        <span style={{ color: accentColor }}>●</span>
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full">
+      <h3 className="text-3xl font-medium mb-8 uppercase tracking-wider flex items-center gap-4">
+        <span style={{ color: accentColor, fontSize: '2rem' }}>●</span>
         {title}
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-6">
         {tasks.map((task: any) => (
-          <label key={task.id} className="flex items-start gap-3 cursor-pointer group">
+          <label key={task.id} className="flex items-start gap-6 cursor-pointer group">
             <input
               type="checkbox"
               defaultChecked={task.completed}
-              className="mt-1 w-5 h-5 rounded border-2 border-[#fff6] bg-transparent accent-current"
+              className="mt-2 w-8 h-8 rounded border-4 border-white/30 bg-transparent accent-current"
               style={{ color: accentColor }}
             />
-            <span className={`text-sm group-hover:text-white transition-colors ${task.completed ? 'line-through opacity-50' : ''}`}>
+            <span className={`text-2xl group-hover:text-white transition-colors ${task.completed ? 'line-through opacity-40' : ''}`}>
               {task.title}
             </span>
           </label>
         ))}
-        {tasks.length === 0 && <div className="text-sm text-[#fff6]">No tasks</div>}
+        {tasks.length === 0 && <div className="text-2xl text-white/30">No tasks</div>}
       </div>
     </div>
   );
 }
 
-// Market Watch Column
+// Market Watch Column - LARGE
 function MarketColumn() {
   const [stocks, setStocks] = useState<any[]>([
     { symbol: 'SPY', price: 502.34, change: 0.45 },
@@ -194,20 +192,20 @@ function MarketColumn() {
   ]);
 
   return (
-    <div className="bg-[#2B2930] rounded-lg p-4 h-full">
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full flex flex-col">
       {/* Indices */}
-      <div className="mb-4 pb-4 border-b border-[#fff2]">
-        <h3 className="text-sm font-medium text-[#fff8] mb-3 uppercase tracking-wide">Indices</h3>
+      <div className="mb-8 pb-8 border-b-2 border-white/10">
+        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Indices</h3>
         {['SPY', 'QQQ'].map(sym => {
           const stock = stocks.find(s => s.symbol === sym);
           if (!stock) return null;
           const isUp = stock.change >= 0;
           return (
-            <div key={sym} className="flex items-center justify-between mb-2">
-              <span className="font-medium">{sym}</span>
+            <div key={sym} className="flex items-center justify-between mb-4">
+              <span className="text-3xl font-medium">{sym}</span>
               <div className="text-right">
-                <span className="font-mono">${stock.price}</span>
-                <span className={`ml-2 text-sm ${isUp ? 'text-[#B4E495]' : 'text-[#FFB4AB]'}`}>
+                <span className="text-3xl font-mono">${stock.price}</span>
+                <span className={`ml-4 text-2xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
                   {isUp ? '↑' : '↓'} {Math.abs(stock.change).toFixed(2)}%
                 </span>
               </div>
@@ -217,16 +215,16 @@ function MarketColumn() {
       </div>
 
       {/* Watchlist */}
-      <h3 className="text-sm font-medium text-[#fff8] mb-3 uppercase tracking-wide">Watchlist</h3>
-      <div className="space-y-2">
+      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Watchlist</h3>
+      <div className="space-y-4 flex-1">
         {stocks.filter(s => !['SPY', 'QQQ'].includes(s.symbol)).map((stock) => {
           const isUp = stock.change >= 0;
           return (
             <div key={stock.symbol} className="flex items-center justify-between">
-              <span className="font-medium">{stock.symbol}</span>
+              <span className="text-2xl font-medium">{stock.symbol}</span>
               <div className="text-right">
-                <span className="font-mono">${stock.price}</span>
-                <span className={`ml-2 text-sm ${isUp ? 'text-[#B4E495]' : 'text-[#FFB4AB]'}`}>
+                <span className="text-2xl font-mono">${stock.price}</span>
+                <span className={`ml-3 text-xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
                   {isUp ? '↑' : '↓'} {Math.abs(stock.change).toFixed(2)}%
                 </span>
               </div>
@@ -238,7 +236,7 @@ function MarketColumn() {
   );
 }
 
-// News Ticker
+// News Ticker - LARGE
 function NewsTicker() {
   const [news, setNews] = useState<string[]>([]);
 
@@ -250,18 +248,20 @@ function NewsTicker() {
   }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t border-[#fff2] py-2 px-4 flex items-center">
-      <div className="overflow-hidden whitespace-nowrap">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t-2 border-white/10 py-4 px-8 flex items-center h-20">
+      <div className="overflow-hidden whitespace-nowrap flex-1">
         <motion.div
-          animate={{ x: [0, -2000] }}
+          animate={{ x: [0, -3000] }}
           transition={{
-            duration: 45,
+            duration: 60,
             repeat: Infinity,
             ease: 'linear',
           }}
           className="inline-block"
         >
-          {news.length > 0 ? news.join('  •  ') : 'Loading news...'}
+          <span className="text-3xl text-white/80">
+            {news.length > 0 ? news.join('  •  ') : 'Loading news...'}
+          </span>
         </motion.div>
       </div>
     </div>
@@ -284,11 +284,11 @@ export default function Dashboard() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: COLORS.background, color: COLORS.text }}
+      style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[#fff2]">
-        <div className="flex items-baseline gap-6">
+      {/* Header - LARGE */}
+      <header className="flex items-center justify-between px-12 py-8 border-b-2 border-white/10">
+        <div className="flex items-baseline gap-12">
           <DateDisplay />
           <Clock />
         </div>
@@ -296,7 +296,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 4 Columns */}
-      <main className="flex-1 grid grid-cols-4 gap-4 p-6 pb-20">
+      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-24">
         {/* Column 1: Sports */}
         <section>
           <SportsColumn />
