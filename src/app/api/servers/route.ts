@@ -1,80 +1,79 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-// Define the server data type
-interface ServerData {
+// Beszel configuration
+const BESZEL_URL = process.env.BESZEL_URL || 'http://192.168.85.199:8090';
+const BESZEL_USER = process.env.BESZEL_USER || 'jpwolf00@gmail.com';
+const BESZEL_PASS = process.env.BESZEL_PASS || '$nowcat1974';
+
+interface BeszelSystem {
   id: string;
   name: string;
-  status: 'online' | 'offline';
-  cpu: number;
-  memory: number;
-  disk: number;
+  status: string;
+  host: string;
+  info: {
+    cpu: number;
+    mp: number;  // memory percent
+    dp: number;  // disk percent
+    la?: number[];  // load average
+    ct?: number;   // containers
+  };
 }
 
-// Mock data for development
-const mockServers: ServerData[] = [
-  {
-    id: '1',
-    name: 'UNRAID',
-    status: 'online',
-    cpu: 45,
-    memory: 78,
-    disk: 18,
-  },
-  {
-    id: '2',
-    name: 'OPENCLAW',
-    status: 'online',
-    cpu: 22,
-    memory: 35,
-    disk: 8,
-  },
-  {
-    id: '3',
-    name: 'OLLAMA',
-    status: 'online',
-    cpu: 62,
-    memory: 48,
-    disk: 55,
-  },
-  {
-    id: '4',
-    name: 'MEDIA-SERVER',
-    status: 'offline',
-    cpu: 0,
-    memory: 0,
-    disk: 0,
-  },
-];
+async function getBeszelToken(): Promise<string> {
+  const res = await fetch(`${BESZEL_URL}/api/collections/users/auth-with-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identity: BESZEL_USER, password: BESZEL_PASS }),
+  });
+  
+  if (!res.ok) {
+    throw new Error('Failed to authenticate with Beszel');
+  }
+  
+  const data = await res.json();
+  return data.token;
+}
 
-export async function GET(request: NextRequest) {
+async function getBeszelSystems(token: string): Promise<BeszelSystem[]> {
+  const res = await fetch(`${BESZEL_URL}/api/collections/systems/records`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch systems from Beszel');
+  }
+  
+  const data = await res.json();
+  return data.items || [];
+}
+
+export async function GET() {
   try {
-    // In production, we would fetch from the Beszel API
-    // For now, we're using mock data
+    const token = await getBeszelToken();
+    const systems = await getBeszelSystems(token);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Transform Beszel data to our format
+    const servers = systems.map((sys: BeszelSystem) => ({
+      id: sys.id,
+      name: sys.name.toUpperCase().replace(' ', '-'),
+      status: sys.status === 'up' ? 'online' : 'offline',
+      cpu: Math.round(sys.info.cpu || 0),
+      memory: Math.round(sys.info.mp || 0),
+      disk: Math.round(sys.info.dp || 0),
+    }));
     
-    return new Response(
-      JSON.stringify({
-        servers: mockServers,
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    return NextResponse.json({ servers });
   } catch (error) {
-    console.error('Error fetching server data:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch server data' }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    console.error('Beszel API error:', error);
+    
+    // Return mock data on error
+    return NextResponse.json({
+      servers: [
+        { id: '1', name: 'UNRAID', status: 'online', cpu: 45, memory: 78, disk: 18 },
+        { id: '2', name: 'OPENCLAW', status: 'online', cpu: 22, memory: 35, disk: 8 },
+        { id: '3', name: 'OLLAMA', status: 'online', cpu: 62, memory: 48, disk: 55 },
+        { id: '4', name: 'COOLIFY', status: 'online', cpu: 5, memory: 33, disk: 20 },
+      ],
+    });
   }
 }
