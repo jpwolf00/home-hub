@@ -23,7 +23,7 @@ export async function GET() {
   try {
     const { CalDAVClient } = await import('caldav')
     
-    const client = new CalDAVClient({
+    const client: any = new CalDAVClient({
       url: 'https://caldav.icloud.com/',
       username: ICLOUD_EMAIL,
       password: ICLOUD_PASSWORD
