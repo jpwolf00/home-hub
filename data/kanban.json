@@ -1,0 +1,6 @@
+[
+  {"id": "1", "title": "Server Monitor Page", "description": "VM monitoring with Beszel", "status": "in_progress", "createdAt": "2026-02-15T20:00:00Z", "updatedAt": "2026-02-15T20:00:00Z", "agentId": "implementer", "agentName": "Implementer"},
+  {"id": "2", "title": "Personal Dashboard", "description": "Weather, sports, tasks, news ticker", "status": "planned", "createdAt": "2026-02-15T20:00:00Z", "updatedAt": "2026-02-15T20:00:00Z"},
+  {"id": "3", "title": "Deploy to Coolify", "description": "Push to production", "status": "planned", "createdAt": "2026-02-15T20:00:00Z", "updatedAt": "2026-02-15T20:00:00Z"},
+  {"id": "4", "title": "Connect Beszel API", "description": "Real VM stats instead of mock", "status": "planned", "createdAt": "2026-02-15T20:00:00Z", "updatedAt": "2026-02-15T20:00:00Z"}
+]
