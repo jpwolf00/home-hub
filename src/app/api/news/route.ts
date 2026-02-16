@@ -2,10 +2,21 @@ import { NextResponse } from 'next/server'
 
 const RSS_URL = 'https://bullrich.dev/tldr-rss/tech.rss'
 
+// Cache news for 5 minutes
+let cache: { data: string[]; timestamp: number } | null = null
+const CACHE_TTL = 300000 // 5 minutes
+
 export async function GET() {
+  const now = Date.now()
+  
+  // Return cached data if fresh
+  if (cache && (now - cache.timestamp) < CACHE_TTL) {
+    return NextResponse.json(cache.data)
+  }
+  
   try {
     const response = await fetch(RSS_URL, {
-      next: { revalidate: 300 } // Cache for 5 minutes
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     })
     
     if (!response.ok) {
