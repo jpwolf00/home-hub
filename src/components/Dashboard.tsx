@@ -7,6 +7,8 @@ import ServerMiniGrid from './widgets/ServerMiniGrid';
 import WeatherWidget from './widgets/WeatherWidget';
 import AICopilotWidget from './widgets/AICopilotWidget';
 import NewsTicker from './widgets/NewsTicker';
+import SportsWidget from './widgets/SportsWidget';
+import TasksWidget from './widgets/TasksWidget';
 import SystemHealthBar from './layout/SystemHealthBar';
 
 export default function Dashboard() {
@@ -61,32 +63,22 @@ export default function Dashboard() {
               <WeatherWidget />
             </motion.div>
 
-            {/* Reminders Widget - Placeholder for now */}
+            {/* Tasks/Reminders Widget */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="card p-4"
             >
-              <h3 className="text-sm font-medium text-white/70 mb-3">Reminders</h3>
-              <div className="text-white/40 text-sm">
-                <p>No reminders yet</p>
-                <p className="text-xs mt-1 opacity-50">Connect Apple Reminders to see your tasks</p>
-              </div>
+              <TasksWidget />
             </motion.div>
 
-            {/* Sports Widget - Placeholder for now */}
+            {/* Sports Widget */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="card p-4"
             >
-              <h3 className="text-sm font-medium text-white/70 mb-3">Sports</h3>
-              <div className="text-white/40 text-sm">
-                <p>No games today</p>
-                <p className="text-xs mt-1 opacity-50">Configure your teams to see scores</p>
-              </div>
+              <SportsWidget />
             </motion.div>
           </div>
         </div>

@@ -1,27 +1,58 @@
 import { NextResponse } from 'next/server'
-import axios from 'axios'
 
-const API_KEY = process.env.OPENWEATHERMAP_API_KEY || ''
-const CITY = 'Morris Plains' // Jason's location
+// Open-Meteo is free, no API key needed
+// Coordinates for Morris Plains, NJ
+const LAT = 40.95
+const LON = -74.44
 
 export async function GET() {
-  if (!API_KEY) {
-    return NextResponse.json({ error: 'No API key' }, { status: 500 })
-  }
-
   try {
-    const response = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&units=imperial&appid=${API_KEY}`
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&temperature_unit=fahrenheit`
     )
     
-    const data = response.data
+    if (!response.ok) {
+      throw new Error('Failed to fetch weather')
+    }
+    
+    const data = await response.json()
+    const current = data.current
+    
+    // Map weather code to description and icon
+    const weatherCodes: Record<number, { description: string; icon: string }> = {
+      0: { description: 'Clear sky', icon: '01d' },
+      1: { description: 'Mainly clear', icon: '01d' },
+      2: { description: 'Partly cloudy', icon: '02d' },
+      3: { description: 'Overcast', icon: '03d' },
+      45: { description: 'Foggy', icon: '50d' },
+      48: { description: 'Depositing rime fog', icon: '50d' },
+      51: { description: 'Light drizzle', icon: '09d' },
+      53: { description: 'Moderate drizzle', icon: '09d' },
+      55: { description: 'Dense drizzle', icon: '09d' },
+      61: { description: 'Slight rain', icon: '10d' },
+      63: { description: 'Moderate rain', icon: '10d' },
+      65: { description: 'Heavy rain', icon: '10d' },
+      71: { description: 'Slight snow', icon: '13d' },
+      73: { description: 'Moderate snow', icon: '13d' },
+      75: { description: 'Heavy snow', icon: '13d' },
+      80: { description: 'Slight rain showers', icon: '09d' },
+      81: { description: 'Moderate rain showers', icon: '09d' },
+      82: { description: 'Violent rain showers', icon: '09d' },
+      95: { description: 'Thunderstorm', icon: '11d' },
+      96: { description: 'Thunderstorm with hail', icon: '11d' },
+      99: { description: 'Thunderstorm with heavy hail', icon: '11d' },
+    }
+    
+    const code = current.weather_code
+    const weather = weatherCodes[code] || { description: 'Unknown', icon: '01d' }
+    
     return NextResponse.json({
-      temp: data.main.temp,
-      feelsLike: data.main.feels_like,
-      humidity: data.main.humidity,
-      description: data.weather[0].description,
-      icon: data.weather[0].icon,
-      city: data.name,
+      temp: current.temperature_2m,
+      feelsLike: current.apparent_temperature,
+      humidity: current.relative_humidity_2m,
+      description: weather.description,
+      icon: weather.icon,
+      city: 'Morris Plains',
     })
   } catch (error) {
     console.error('Weather API error:', error)
