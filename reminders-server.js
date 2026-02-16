@@ -18,7 +18,10 @@ function getReminders() {
       repeat with r in every reminder
         set reminderName to name of r
         set remCompleted to completed of r
-        set end of reminderList to {name:reminderName, completed:remCompleted, list:"General"}
+        -- Only include incomplete reminders
+        if remCompleted is false then
+          set end of reminderList to {name:reminderName, completed:remCompleted, list:"General"}
+        end if
       end repeat
       return reminderList
     end tell
