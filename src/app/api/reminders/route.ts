@@ -17,7 +17,7 @@ export async function GET() {
   
   try {
     const response = await fetch(`http://${MAC_IP}:${MAC_PORT}/reminders`, {
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     })
     
     if (!response.ok) {
@@ -31,11 +31,13 @@ export async function GET() {
     
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Failed to fetch reminders:', error)
+    const errMsg = error instanceof Error ? error.message : String(error)
+    console.error('Failed to fetch reminders:', errMsg)
     // Return stale cache if available
     if (cache) {
+      console.log('Returning stale cache')
       return NextResponse.json(cache.data)
     }
-    return NextResponse.json([])
+    return NextResponse.json({ error: errMsg, mac: MAC_IP })
   }
 }
