@@ -236,9 +236,10 @@ function MarketColumn() {
   );
 }
 
-// News Ticker - LARGE
+// News Ticker - Rotating headlines
 function NewsTicker() {
   const [news, setNews] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     fetch('/api/news')
@@ -247,22 +248,41 @@ function NewsTicker() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (news.length <= 1) return;
+    const interval = setInterval(() => {
+      setIndex(i => (i + 1) % news.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [news.length]);
+
+  if (news.length === 0) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t-2 border-white/10 py-4 px-8 flex items-center h-20">
+        <span className="text-2xl text-white/50">Loading news...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t-2 border-white/10 py-4 px-8 flex items-center h-20">
-      <div className="overflow-hidden whitespace-nowrap flex-1">
-        <motion.div
-          animate={{ x: [0, -3000] }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-          className="inline-block"
-        >
-          <span className="text-3xl text-white/80">
-            {news.length > 0 ? news.join('  •  ') : 'Loading news...'}
-          </span>
-        </motion.div>
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.5 }}
+        className="flex-1"
+      >
+        <span className="text-3xl text-white/90">{news[index]}</span>
+      </motion.div>
+      <div className="flex gap-2 ml-8">
+        {news.slice(0, 5).map((_, i) => (
+          <div
+            key={i}
+            className={`w-3 h-3 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
+          />
+        ))}
       </div>
     </div>
   );
