@@ -240,29 +240,28 @@ function MarketColumn() {
 
 // News Ticker
 function NewsTicker() {
-  const [news, setNews] = useState<string[]>([
-    'BREAKING: Market opens higher amid positive economic data',
-    'Chelsea face Burnley in Premier League action this weekend',
-    'Tech stocks rally as AI investments continue to grow',
-    'Federal Reserve signals steady interest rates ahead',
-  ]);
+  const [news, setNews] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/news')
+      .then(r => r.json())
+      .then(data => setNews(data.items || []))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t border-[#fff2] py-2 px-4 flex items-center">
-      <span className="bg-[#BA1A1A] text-white text-xs font-bold px-2 py-1 rounded mr-4 shrink-0">
-        BREAKING
-      </span>
       <div className="overflow-hidden whitespace-nowrap">
         <motion.div
-          animate={{ x: [0, -1000] }}
+          animate={{ x: [0, -2000] }}
           transition={{
-            duration: 30,
+            duration: 45,
             repeat: Infinity,
             ease: 'linear',
           }}
           className="inline-block"
         >
-          {news.join('  •  ')}
+          {news.length > 0 ? news.join('  •  ') : 'Loading news...'}
         </motion.div>
       </div>
     </div>
