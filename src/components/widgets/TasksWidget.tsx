@@ -42,7 +42,6 @@ export default function TasksWidget() {
   }
 
   const incompleteReminders = reminders.filter(r => !r.completed).slice(0, 8)
-  const lists = [...new Set(incompleteReminders.map(r => r.list).filter(Boolean))]
 
   return (
     <div className="card card-hover p-4 h-full">
