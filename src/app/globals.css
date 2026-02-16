@@ -6,6 +6,10 @@
   --foreground-rgb: 15, 23, 42;
   --background-start-rgb: 15, 23, 42;
   --background-end-rgb: 30, 41, 59;
+
+  /* Night mode dim level (0-1, lower = darker) */
+  --night-dim-level: 1;
+  --night-brightness: 1;
 }
 
 body {
@@ -19,12 +23,113 @@ body {
   min-height: 100vh;
 }
 
+/* Burn-in prevention: subtle gradient animation */
+@keyframes burnInPrevention {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Apply burn-in prevention to body when not in reduced motion */
+@supports (background: linear-gradient(...)) {
+  @media (prefers-reduced-motion: no-preference) {
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(14, 165, 233, 0.02) 25%,
+        transparent 50%,
+        rgba(56, 189, 248, 0.02) 75%,
+        transparent 100%
+      );
+      background-size: 400% 400%;
+      animation: burnInPrevention 60s ease infinite;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+    }
+  }
+}
+
+/* Night mode styles (applied on a wrapper div inside <body>) */
+.night-mode {
+  --night-dim-level: 0.7;
+  --night-brightness: 0.6;
+  filter: brightness(var(--night-brightness));
+}
+
+/* Night mode specific element dimming */
+.night-mode .card {
+  opacity: var(--night-dim-level);
+}
+
+/* Hide non-essential widgets in night mode */
+.night-mode .news-ticker,
+.night-mode [data-night-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* Night mode indicator in header */
+.night-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  background: rgba(56, 189, 248, 0.2);
+  color: rgba(186, 230, 253, 0.9);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.night-mode-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
 @layer components {
   .card {
     @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl;
   }
-  
+
   .card-hover {
     @apply hover:bg-white/15 transition-all duration-300 hover:scale-[1.02];
+  }
+
+  .news-ticker {
+    @apply fixed bottom-0 left-0 right-0;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  body::before {
+    animation: none !important;
+    background: none !important;
   }
 }

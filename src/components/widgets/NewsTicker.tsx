@@ -37,7 +37,8 @@ export default function NewsTicker() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-white/10 py-2 px-4"
+      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-white/10 py-2 px-4 news-ticker"
+      data-night-hidden="true"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
