@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 const MAC_IP = process.env.MAC_REMINDERS_IP || '192.168.85.109'
 const MAC_PORT = process.env.MAC_REMINDERS_PORT || '3456'
 
