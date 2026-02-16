@@ -15,14 +15,16 @@ export async function GET() {
     })
     
     clearTimeout(timeout)
-    const data = await response.json()
+    const text = await response.text()
+    const data = JSON.parse(text)
     const latency = Date.now() - start
     
     return NextResponse.json({
       success: true,
       latency,
       count: data.length,
-      reminders: data.slice(0, 3)
+      reminders: data.slice(0, 3),
+      raw: text.substring(0, 500)
     })
   } catch (error) {
     const latency = Date.now() - start
