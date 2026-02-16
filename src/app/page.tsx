@@ -312,10 +312,9 @@ export default function Dashboard() {
       .then(r => r.json())
       .then(data => {
         if (data && data.length > 0) {
-          const work = data.filter((t: any) => t.list?.toLowerCase().includes('work') || t.list?.toLowerCase().includes('bd')).slice(0, 5);
-          const personal = data.filter((t: any) => !t.list?.toLowerCase().includes('work') && !t.list?.toLowerCase().includes('bd')).slice(0, 5);
-          if (work.length > 0) setWorkTasks(work.map((t: any, i: number) => ({ id: i, title: t.name, completed: t.completed })));
-          if (personal.length > 0) setPersonalTasks(personal.map((t: any, i: number) => ({ id: i + 100, title: t.name, completed: t.completed })));
+          // All reminders go to Work column (can't filter by list due to macOS permissions)
+          setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.name || t.title, completed: t.completed })));
+          setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.name || t.title, completed: t.completed })));
         } else {
           // No reminders - use fallback
           setWorkTasks([
