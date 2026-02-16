@@ -306,37 +306,28 @@ export default function Dashboard() {
     { id: 1, title: 'Loading from Mac...', completed: false },
   ]);
 
-  // Fetch from iCloud (or fallback to Mac)
+  // Fetch from Mac Reminders server via proxy
   useEffect(() => {
-    fetch('/api/icloud-reminders')
+    fetch('/api/reminders')
       .then(r => r.json())
       .then(data => {
         console.log('Reminders response:', data);
         if (data && Array.isArray(data) && data.length > 0) {
           setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
           setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));
+        } else if (data && data.error) {
+          console.error('Reminders error:', data.error);
+          setWorkTasks([]);
+          setPersonalTasks([]);
         } else {
-          // No reminders - use fallback
-          setWorkTasks([
-            { id: 1, title: 'Review Q1 pipeline', completed: false },
-            { id: 2, title: 'Follow up with prospects', completed: false },
-          ]);
-          setPersonalTasks([
-            { id: 3, title: 'HomeLab backup', completed: false },
-            { id: 4, title: 'Dog walk - Fauci', completed: false },
-          ]);
+          setWorkTasks([]);
+          setPersonalTasks([]);
         }
       })
-      .catch(() => {
-        // API failed - use fallback
-        setWorkTasks([
-          { id: 1, title: 'Review Q1 pipeline', completed: false },
-          { id: 2, title: 'Follow up with prospects', completed: false },
-        ]);
-        setPersonalTasks([
-          { id: 3, title: 'HomeLab backup', completed: false },
-          { id: 4, title: 'Dog walk - Fauci', completed: false },
-        ]);
+      .catch((err) => {
+        console.error('Failed to fetch reminders:', err);
+        setWorkTasks([]);
+        setPersonalTasks([]);
       });
   }, []);
 
