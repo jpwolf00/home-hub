@@ -11,14 +11,14 @@ const { execSync } = require('child_process');
 const PORT = 3456;
 
 function getReminders() {
+  // Simpler script - just get name and completed, skip list name (causes permission issues)
   const script = `
     tell application "Reminders"
       set reminderList to {}
       repeat with r in every reminder
         set reminderName to name of r
         set remCompleted to completed of r
-        set remList to name of list of r
-        set end of reminderList to {name:reminderName, completed:remCompleted, list:remList}
+        set end of reminderList to {name:reminderName, completed:remCompleted, list:"General"}
       end repeat
       return reminderList
     end tell
