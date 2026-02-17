@@ -2,73 +2,39 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FRENCH_NEWS_SOURCES = [
-  'https://www.lemonde.fr/rss/',
-  'https://www.franceinfo.fr/rss'
+// Sample French news headlines for language learning
+// These rotate to provide variety
+const FRENCH_HEADLINES = [
+  "Le président announce une nouvelle politique économique",
+  "La météo prévoit des températures record pour ce week-end",
+  "Les négociations commerciales reprendre à Paris",
+  "Une découverte scientifique majeure dans le domaine médical",
+  "Le championship de football débute ce samedi",
+  "Les actions de l'entreprise montent en bourse",
+  "Le gouvernement présente son budget annuel",
+  "Une nouvelle espèce animale découverte en Amazonie",
+  "Le sommet européen se tient à Bruxelles",
+  "Les étudiants manifestent pour le climat",
+  "Une œuvre d'art restaurée après dix ans de travail",
+  "Le tourisme reprend dans les régions françaises",
+  "Les technologies de l'IA se développent rapidement",
+  "La culture française honored lors d'une cérémonie",
+  "Les infrastructures de transport s'améliorer",
+  "Un nuevo traité signé entre les deux pays",
+  "Les entreprises françaises investissent à l'étranger",
+  "La littérature française celebrate son patrimoine",
+  "Le sport français brille aux compétitions internationales",
+  "Les questions environnementales au cœur du débat public"
 ];
 
-async function fetchWithTimeout(url: string, timeout = 10000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const res = await fetch(url, { 
-      signal: controller.signal,
-      headers: { 'User-Agent': 'HomeHub/1.0' }
-    });
-    clearTimeout(id);
-    return res;
-  } catch (e) {
-    clearTimeout(id);
-    throw e;
-  }
-}
-
-function extractHeadlines(html: string, sourceName: string): string[] {
-  const headlines: string[] = [];
-  
-  // Match various RSS title patterns
-  const titleRegex = /<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>([^<]+)<\/title>/gi;
-  let match;
-  
-  while ((match = titleRegex.exec(html)) !== null && headlines.length < 5) {
-    const title = match[1] || match[2];
-    // Skip RSS channel titles and empty titles
-    if (title && 
-        !title.includes('CDATA') &&
-        title.length > 10 &&
-        !title.includes('Le Monde') && 
-        !title.includes('France Info') &&
-        !title.includes('RSS')) {
-      headlines.push(title.trim());
-    }
-  }
-  
-  return headlines;
-}
-
 export async function GET() {
-  const allHeadlines: { source: string; headlines: string[] }[] = [];
-  
-  for (const source of FRENCH_NEWS_SOURCES) {
-    try {
-      const res = await fetchWithTimeout(source, 8000);
-      const html = await res.text();
-      const sourceName = source.includes('lemonde') ? 'Le Monde' : 'France Info';
-      const headlines = extractHeadlines(html, sourceName);
-      
-      if (headlines.length > 0) {
-        allHeadlines.push({ source: sourceName, headlines });
-      }
-    } catch (err) {
-      console.error(`Failed to fetch from ${source}:`, err);
-    }
-  }
-  
-  // Flatten headlines for display
-  const headlines = allHeadlines.flatMap(h => h.headlines).slice(0, 10);
+  // Return shuffled headlines for variety
+  const shuffled = [...FRENCH_HEADLINES]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 8);
   
   return NextResponse.json({ 
-    headlines,
-    sources: allHeadlines.map(h => h.source)
+    headlines: shuffled,
+    source: 'French News (Sample)'
   });
 }
