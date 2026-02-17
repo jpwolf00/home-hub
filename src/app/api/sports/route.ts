@@ -7,6 +7,7 @@ const API_KEY = process.env.FOOTBALL_DATA_API_KEY || ''
 const TEAMS: Record<string, { name: string; logo: string; isHome?: (team: string) => boolean }> = {
   'Chelsea': { name: 'Chelsea', logo: '🔵' },
   'PSG': { name: 'Paris SG', logo: '🔴🔵' },
+  'Monaco': { name: 'Monaco', logo: '🔴' },
   'Wrexham': { name: 'Wrexham', logo: '🐉' },
   'Kentucky': { name: 'Kentucky', logo: '🔵' },
   'Georgia': { name: 'Georgia', logo: '🔴' },
@@ -120,6 +121,18 @@ function getLocalSchedule() {
       status: 'SCHEDULED',
       date: '2026-02-21T15:00:00Z',
       league: 'Premier League',
+      isHome: true,
+    },
+    // PSG vs Monaco - Champions League (NOW - Feb 17, 2026)
+    {
+      id: 402,
+      homeTeam: 'Monaco',
+      awayTeam: 'PSG',
+      homeScore: null,
+      awayScore: null,
+      status: 'LIVE',
+      date: '2026-02-17T20:00:00Z',
+      league: 'Champions League',
       isHome: true,
     },
     // PSG (Ligue 1)
