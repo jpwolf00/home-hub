@@ -14,21 +14,23 @@ interface Match {
   isHome?: boolean
 }
 
-// Team logo URLs (Wikipedia)
+// Team logo URLs - using text only for now
+// To add images: add URL to this object, then update getLogo to return <img> instead
 const TEAM_LOGOS: Record<string, string> = {
-  'Kentucky': '🔵',
-  'Georgia': '🐕',
-  'Auburn': '🐯',
-  'Chelsea': '🔵',
-  'Burnley': '🔥',
-  'Wrexham': '🐉',
-  'Wycombe': '🦅',
-  'PSG': '🔴🔵',
-  'Lille': '🟠',
-  'Bristol City': '🔴',
+  'Kentucky': '',
+  'Georgia': '',
+  'Auburn': '',
+  'Chelsea': '',
+  'Burnley': '',
+  'Wrexham': '',
+  'Wycombe': '',
+  'PSG': '',
+  'Lille': '',
+  'Monaco': '',
+  'Bristol City': '',
 }
 
-const getLogo = (team: string) => TEAM_LOGOS[team] || '⚽';
+const getLogo = (team: string) => '';
 
 export default function SportsWidget() {
   const [matches, setMatches] = useState<Match[]>([])
@@ -86,15 +88,12 @@ export default function SportsWidget() {
         </div>
       ) : matches.length === 0 ? (
         <div className="text-center py-8 text-white/40">
-          <p className="text-2xl mb-2">⚽</p>
           <p className="text-sm">No matches today</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {matches.slice(0, 4).map(match => {
             const { gameDate, gameTime } = formatDateTime(match.date)
-            const homeLogo = getLogo(match.homeTeam)
-            const awayLogo = getLogo(match.awayTeam)
             const homeAwayLabel = match.isHome === true ? 'HOME' : match.isHome === false ? 'AWAY' : ''
             return (
             <li key={match.id} className="bg-white/5 rounded-lg p-3">
@@ -106,7 +105,6 @@ export default function SportsWidget() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{homeLogo}</span>
                   <span className="text-sm text-white font-medium">{match.homeTeam}</span>
                   {homeAwayLabel === 'HOME' && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
@@ -115,7 +113,6 @@ export default function SportsWidget() {
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-white font-medium">{match.awayTeam}</span>
-                  <span className="text-xl">{awayLogo}</span>
                   {homeAwayLabel === 'AWAY' && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
