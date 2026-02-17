@@ -8,13 +8,6 @@ interface NewsItem {
   source: string;
 }
 
-interface Story {
-  id: string;
-  title: string;
-  source?: string;
-  link: string;
-}
-
 export default function NewsTicker() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -23,13 +16,14 @@ export default function NewsTicker() {
   useEffect(() => {
     async function fetchNews() {
       try {
-        const res = await fetch('/api/top-stories?limit=10');
-        const stories: Story[] = await res.json();
+        // Use /api/news for national/world news (CNN, BBC)
+        const res = await fetch('/api/news');
+        const titles: string[] = await res.json();
         
-        if (stories && stories.length > 0) {
-          setNews(stories.map((s) => ({
-            title: s.title,
-            source: s.source || 'News',
+        if (titles && titles.length > 0) {
+          setNews(titles.map((title) => ({
+            title,
+            source: 'Reuters/AP',
           })));
         }
       } catch (err) {
