@@ -52,7 +52,95 @@ const TEAM_LOGOS: Record<string, string> = {
   'Ipswich': '/logos/championship/ipswich.png',
 }
 
-const getLogo = (team: string) => TEAM_LOGOS[team] || '';
+const getLogo = (team: string) => {
+  if (!team) return '';
+  
+  // Try exact match first
+  if (TEAM_LOGOS[team]) return TEAM_LOGOS[team];
+  
+  // Try lowercase
+  const lower = team.toLowerCase();
+  if (TEAM_LOGOS[team]) return TEAM_LOGOS[team];
+  
+  // Try common variations
+  const variations: Record<string, string> = {
+    'manchester united': '/logos/premier-league/manchester-united.png',
+    'manchester city': '/logos/premier-league/manchester-city.png',
+    'man utd': '/logos/premier-league/manchester-united.png',
+    'man city': '/logos/premier-league/manchester-city.png',
+    'tottenham': '/logos/premier-league/tottenham-hotspur.png',
+    'spurs': '/logos/premier-league/tottenham-hotspur.png',
+    'west ham': '/logos/premier-league/west-ham-united.png',
+    'wolves': '/logos/premier-league/wolverhampton-wanderers.png',
+    'wolverhampton': '/logos/premier-league/wolverhampton-wanderers.png',
+    'brighton': '/logos/premier-league/brighton.png',
+    'arsenal': '/logos/premier-league/arsenal.png',
+    'aston villa': '/logos/premier-league/aston-villa.png',
+    'bournemouth': '/logos/premier-league/bournemouth.png',
+    'brentford': '/logos/premier-league/brentford.png',
+    'crystal palace': '/logos/premier-league/crystal-palace.png',
+    'everton': '/logos/premier-league/everton.png',
+    'fulham': '/logos/premier-league/fulham.png',
+    'liverpool': '/logos/premier-league/liverpool.png',
+    'newcastle': '/logos/premier-league/newcastle-united.png',
+    'nottingham': '/logos/premier-league/nottingham-forest.png',
+    'forest': '/logos/premier-league/nottingham-forest.png',
+    'southampton': '/logos/premier-league/southampton.png',
+    'ipswich town': '/logos/premier-league/ipswich.png',
+    // Ligue 1
+    'paris saint-germain': '/logos/ligue-1/psg.png',
+    'olympique lyon': '/logos/ligue-1/olympique-lyon.png',
+    'olympique marseille': '/logos/ligue-1/olympique-marseille.png',
+    'lyon': '/logos/ligue-1/olympique-lyon.png',
+    'marseille': '/logos/ligue-1/olympique-marseille.png',
+    'lens': '/logos/ligue-1/rc-lens.png',
+    'nice': '/logos/ligue-1/ogc-nice.png',
+    'brest': '/logos/ligue-1/stade-brestois-29.png',
+    'rennes': '/logos/ligue-1/stade-rennais-fc.png',
+    'strasbourg': '/logos/ligue-1/rc-strasbourg-alsace.png',
+    'toulouse': '/logos/ligue-1/fc-toulouse.png',
+    'nantes': '/logos/ligue-1/fc-nantes.png',
+    'metz': '/logos/ligue-1/fc-metz.png',
+    'lorient': '/logos/ligue-1/fc-lorient.png',
+    // Championship
+    'leeds united': '/logos/championship/leeds-united.png',
+    'leeds': '/logos/championship/leeds-united.png',
+    'sheffield wednesday': '/logos/championship/sheffield-wednesday.png',
+    'sunderland': '/logos/championship/sunderland.png',
+    'middlesbrough': '/logos/championship/middlesbrough.png',
+    'west bromwich': '/logos/championship/west-bromwich-albion.png',
+    'preston north end': '/logos/championship/preston-north-end.png',
+    'hull city': '/logos/championship/hull-city.png',
+    'cardiff city': '/logos/championship/cardiff-city.png',
+    'swansea city': '/logos/championship/swanseacity.png',
+    'blackburn rovers': '/logos/championship/blackburn-rovers.png',
+    'derby county': '/logos/championship/derby-county.png',
+    'oxford united': '/logos/championship/oxford-united.png',
+    'luton town': '/logos/championship/luton-town.png',
+    'queens park rangers': '/logos/championship/queens-park-rangers.png',
+    'stoke city': '/logos/championship/stoke-city.png',
+    'coventry city': '/logos/championship/coventry-city.png',
+    // SEC
+    'kentucky wildcats': '/logos/sec/kentucky.png',
+    'georgia bulldogs': '/logos/sec/georgia.png',
+    'auburn tigers': '/logos/sec/auburn.png',
+    'alabama': '/logos/sec/alabama.png',
+    'arkansas': '/logos/sec/arkansas.png',
+    'florida': '/logos/sec/florida.png',
+    'lsu': '/logos/sec/lsu.png',
+    'mississippi state': '/logos/sec/mississippi-state.png',
+    'missouri': '/logos/sec/missouri.png',
+    'oklahoma': '/logos/sec/oklahoma.png',
+    'ole miss': '/logos/sec/ole-miss.png',
+    'south carolina': '/logos/sec/south-carolina.png',
+    'tennessee': '/logos/sec/tennessee.texas.png',
+    'texas a&m': '/logos/sec/texas-am.png',
+    'texas': '/logos/sec/texas.png',
+    'vanderbilt': '/logos/sec/vanderbilt.png',
+  };
+  
+  return variations[lower] || '';
+};
 
 export default function SportsWidget() {
   const [matches, setMatches] = useState<Match[]>([])
