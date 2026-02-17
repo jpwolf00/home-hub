@@ -2,39 +2,74 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-// Sample French news headlines for language learning
-// These rotate to provide variety
-const FRENCH_HEADLINES = [
-  "Le président announce une nouvelle politique économique",
-  "La météo prévoit des températures record pour ce week-end",
-  "Les négociations commerciales reprendre à Paris",
-  "Une découverte scientifique majeure dans le domaine médical",
-  "Le championship de football débute ce samedi",
-  "Les actions de l'entreprise montent en bourse",
-  "Le gouvernement présente son budget annuel",
-  "Une nouvelle espèce animale découverte en Amazonie",
-  "Le sommet européen se tient à Bruxelles",
-  "Les étudiants manifestent pour le climat",
-  "Une œuvre d'art restaurée après dix ans de travail",
-  "Le tourisme reprend dans les régions françaises",
-  "Les technologies de l'IA se développent rapidement",
-  "La culture française honored lors d'une cérémonie",
-  "Les infrastructures de transport s'améliorer",
-  "Un nuevo traité signé entre les deux pays",
-  "Les entreprises françaises investissent à l'étranger",
-  "La littérature française celebrate son patrimoine",
-  "Le sport français brille aux compétitions internationales",
-  "Les questions environnementales au cœur du débat public"
-];
+const RSS_URL = 'https://www.1jour1actu.com/feed';
+
+async function fetchWithHeaders(url: string) {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/rss+xml, application/xml, text/xml',
+    }
+  });
+  return res;
+}
+
+function extractHeadlines(xml: string): string[] {
+  const headlines: string[] = [];
+  
+  // Match <title> elements (skip first 2 which are usually channel title)
+  const titleRegex = /<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>([^<]+)<\/title>/gi;
+  let match;
+  let count = 0;
+  
+  while ((match = titleRegex.exec(xml)) !== null && headlines.length < 8) {
+    const title = match[1] || match[2];
+    // Skip channel title and empty titles
+    if (title && title.length > 5 && !title.includes('1jour1actu')) {
+      headlines.push(title.trim());
+    }
+  }
+  
+  return headlines;
+}
 
 export async function GET() {
-  // Return shuffled headlines for variety
-  const shuffled = [...FRENCH_HEADLINES]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 8);
-  
-  return NextResponse.json({ 
-    headlines: shuffled,
-    source: 'French News (Sample)'
-  });
+  try {
+    const res = await fetchWithHeaders(RSS_URL);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    
+    const xml = await res.text();
+    const headlines = extractHeadlines(xml);
+    
+    if (headlines.length === 0) {
+      throw new Error('No headlines extracted');
+    }
+    
+    return NextResponse.json({ 
+      headlines,
+      source: '1jour1actu.com (Kids News)'
+    });
+  } catch (err) {
+    console.error('French news fetch error:', err);
+    
+    // Fallback headlines
+    const fallback = [
+      "Le président announce une nouvelle politique",
+      "La météo prévoit des températures record",
+      "Les négociations commerciales à Paris",
+      "Une découverte scientifique majeure",
+      "Le championship de football débute",
+      "Les actions en bourse montent",
+      "Le gouvernement présente son budget",
+      "Les étudiants manifestent pour le climat"
+    ];
+    
+    return NextResponse.json({ 
+      headlines: fallback,
+      source: 'Fallback (API Error)'
+    });
+  }
 }
