@@ -241,6 +241,85 @@ function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[
   );
 }
 
+function HomeNetworkWidget() {
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    const load = () => {
+      fetch('/api/servers')
+        .then(r => r.json())
+        .then(setData)
+        .catch(() => {});
+    };
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const servers = data?.servers || [];
+  const isStale = !!data?.isStale;
+
+  const bar = (value: number, color: string) => (
+    <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+      <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }} />
+    </div>
+  );
+
+  return (
+    <div className="mt-2 flex-1">
+      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest flex items-center justify-between">
+        <span>Home Network</span>
+        {isStale && <span className="text-sm text-amber-300/90 tracking-wider">STALE</span>}
+      </h3>
+
+      <div className="space-y-5">
+        {servers.slice(0, 6).map((s: any) => {
+          const online = s.status === 'online';
+          return (
+            <div key={s.id} className="rounded-2xl p-5 bg-[#1C1B1F]/55 border border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`w-3 h-3 rounded-full ${online ? 'bg-green-400' : 'bg-red-400'}`} />
+                  <span className="text-2xl font-medium truncate">{s.name}</span>
+                </div>
+                <span className={`text-sm uppercase tracking-wider ${online ? 'text-green-200/90' : 'text-red-200/90'}`}>{online ? 'Online' : 'Offline'}</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <div className="flex items-center justify-between text-sm text-white/50 mb-2">
+                    <span>CPU</span>
+                    <span className="font-mono">{s.cpu}%</span>
+                  </div>
+                  {bar(Number(s.cpu || 0), 'rgba(96, 165, 250, 0.9)')}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-sm text-white/50 mb-2">
+                    <span>RAM</span>
+                    <span className="font-mono">{s.memory}%</span>
+                  </div>
+                  {bar(Number(s.memory || 0), 'rgba(167, 139, 250, 0.9)')}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-sm text-white/50 mb-2">
+                    <span>Disk</span>
+                    <span className="font-mono">{s.disk}%</span>
+                  </div>
+                  {bar(Number(s.disk || 0), 'rgba(52, 211, 153, 0.9)')}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {servers.length === 0 && (
+          <div className="text-2xl text-white/40">Loading servers…</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Market Watch Column - LARGE
 function MarketColumn() {
   const [stocks, setStocks] = useState<any[]>([]);
@@ -282,24 +361,8 @@ function MarketColumn() {
         })}
       </div>
 
-      {/* Watchlist */}
-      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Watchlist</h3>
-      <div className="space-y-4 flex-1">
-        {stocks.filter(s => !['SPY', 'QQQ', 'DIA'].includes(s.symbol) && !s?.error).map((stock) => {
-          const isUp = stock.changePct >= 0;
-          return (
-            <div key={stock.symbol} className="flex items-center justify-between">
-              <span className="text-2xl font-medium">{stock.symbol}</span>
-              <div className="text-right">
-                <span className="text-2xl font-mono">${Number(stock.price).toFixed(2)}</span>
-                <span className={`ml-3 text-xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                  {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Home Network */}
+      <HomeNetworkWidget />
     </div>
   );
 }
