@@ -298,38 +298,30 @@ function NewsTicker() {
 }
 
 export default function Dashboard() {
-  const [workTasks, setWorkTasks] = useState([
-    { id: 1, title: 'Loading from Mac...', completed: false },
-  ]);
-
-  const [personalTasks, setPersonalTasks] = useState([
-    { id: 1, title: 'Loading from Mac...', completed: false },
-  ]);
+  const [reminderLists, setReminderLists] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
 
   // Fetch from Mac Reminders server via proxy
   useEffect(() => {
     fetch('/api/reminders')
       .then(r => r.json())
       .then(data => {
-        console.log('Reminders response:', data);
         if (data && Array.isArray(data) && data.length > 0) {
-          setWorkTasks(data.slice(0, 5).map((t: any, i: number) => ({ id: i, title: t.title || t.name || 'Untitled', completed: t.completed })));
-          setPersonalTasks(data.slice(5, 10).map((t: any, i: number) => ({ id: i + 100, title: t.title || t.name || 'Untitled', completed: t.completed })));
-        } else if (data && data.error) {
-          console.error('Reminders error:', data.error);
-          setWorkTasks([]);
-          setPersonalTasks([]);
-        } else {
-          setWorkTasks([]);
-          setPersonalTasks([]);
+          // Group reminders by their actual list name
+          const grouped: Record<string, any[]> = {};
+          data.forEach((t: any, i: number) => {
+            const list = t.list || 'General';
+            if (!grouped[list]) grouped[list] = [];
+            grouped[list].push({ id: i, title: t.title || 'Untitled', completed: t.completed });
+          });
+          setReminderLists(grouped);
         }
       })
-      .catch((err) => {
-        console.error('Failed to fetch reminders:', err);
-        setWorkTasks([]);
-        setPersonalTasks([]);
-      });
+      .catch((err) => console.error('Failed to fetch reminders:', err))
+      .finally(() => setLoading(false));
   }, []);
+
+  const listNames = Object.keys(reminderLists);
 
   return (
     <div
@@ -352,23 +344,26 @@ export default function Dashboard() {
           <SportsColumn />
         </section>
 
-        {/* Column 2: Work Tasks */}
-        <section>
-          <TasksColumn
-            title="Work - BD"
-            tasks={workTasks}
-            accentColor={COLORS.work}
-          />
-        </section>
-
-        {/* Column 3: Personal Tasks */}
-        <section>
-          <TasksColumn
-            title="Personal"
-            tasks={personalTasks}
-            accentColor={COLORS.personal}
-          />
-        </section>
+        {/* Reminder Lists - one column per list */}
+        {listNames.slice(0, 2).map((listName, idx) => (
+          <section key={listName}>
+            <TasksColumn
+              title={listName}
+              tasks={reminderLists[listName] || []}
+              accentColor={idx === 0 ? COLORS.work : COLORS.personal}
+            />
+          </section>
+        ))}
+        {listNames.length === 0 && !loading && (
+          <>
+            <section>
+              <TasksColumn title="Reminders" tasks={[]} accentColor={COLORS.work} />
+            </section>
+            <section>
+              <TasksColumn title="Reminders" tasks={[]} accentColor={COLORS.personal} />
+            </section>
+          </>
+        )}
 
         {/* Column 4: Market */}
         <section>

@@ -20,13 +20,16 @@ function getReminders() {
     return cache.data;
   }
 
-  // Batch fetch: get all names and completed statuses in two calls instead of looping
+  // Iterate lists and batch-fetch names per list
   const script = `
     tell application "Reminders"
-      set allNames to name of (every reminder whose completed is false)
       set output to ""
-      repeat with n in allNames
-        set output to output & n & "|||"
+      repeat with L in every list
+        set listName to name of L
+        set incompleteReminders to (every reminder of L whose completed is false)
+        repeat with r in incompleteReminders
+          set output to output & listName & ":::" & name of r & "|||"
+        end repeat
       end repeat
       return output
     end tell
@@ -36,20 +39,20 @@ function getReminders() {
     const start = Date.now();
     const result = execSync(`osascript -e '${script}'`, {
       encoding: 'utf8',
-      timeout: 30000,
+      timeout: 60000,
     }).trim();
     const elapsed = Date.now() - start;
     console.log(`AppleScript completed in ${elapsed}ms`);
 
     const reminders = [];
     if (result.length > 0) {
-      const names = result.split('|||').filter(n => n.trim().length > 0);
-      for (const name of names) {
-        reminders.push({
-          title: name.trim(),
-          completed: false,
-          list: 'General',
-        });
+      const entries = result.split('|||').filter(e => e.trim().length > 0);
+      for (const entry of entries) {
+        const sepIdx = entry.indexOf(':::');
+        if (sepIdx === -1) continue;
+        const list = entry.substring(0, sepIdx).trim();
+        const title = entry.substring(sepIdx + 3).trim();
+        reminders.push({ title, completed: false, list });
       }
     }
 
@@ -57,7 +60,6 @@ function getReminders() {
     return reminders;
   } catch (e) {
     console.error('Error running AppleScript:', e.message);
-    // Return stale cache if available
     if (cache.data.length > 0) return cache.data;
     return [];
   }
@@ -68,6 +70,8 @@ setTimeout(() => {
   console.log('Pre-fetching reminders...');
   const reminders = getReminders();
   console.log(`Cached ${reminders.length} reminders on startup`);
+  const lists = [...new Set(reminders.map(r => r.list))];
+  console.log(`Lists: ${lists.join(', ')}`);
 }, 1000);
 
 const server = http.createServer((req, res) => {
@@ -82,14 +86,18 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ status: 'ok', cached: cache.data.length }));
   } else if (req.url === '/' || req.url === '/index.html') {
     const reminders = getReminders();
+    const lists = [...new Set(reminders.map(r => r.list))];
     const html = `<!DOCTYPE html>
 <html>
 <head><title>Mac Reminders</title></head>
 <body style="font-family: monospace; padding: 20px;">
 <h1>🍎 Mac Reminders (${reminders.length})</h1>
-${reminders.length === 0 ? '<p>(no reminders)</p>' : reminders.map((r, i) =>
+${lists.map(list => `
+<h2>${list} (${reminders.filter(r => r.list === list).length})</h2>
+${reminders.filter(r => r.list === list).map((r, i) =>
   `<p>${i+1}. ${r.title}</p>`
 ).join('')}
+`).join('')}
 </body>
 </html>`;
     res.setHeader('Content-Type', 'text/html');
