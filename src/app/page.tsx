@@ -244,10 +244,15 @@ function SportsColumn() {
 
   const getLogo = (team: string) => TEAM_LOGOS[team] || '';
 
-  // Sort by date and show next 5 games
+  // Sort by date and show next 5 games (include LIVE games)
   const upcomingGames = matches
-    .filter(m => m.status === 'SCHEDULED')
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .filter(m => m.status === 'SCHEDULED' || m.status === 'LIVE')
+    .sort((a, b) => {
+      // LIVE games first, then by date
+      if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
+      if (b.status === 'LIVE' && a.status !== 'LIVE') return 1;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    })
     .slice(0, 5);
 
   return (
