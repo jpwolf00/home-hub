@@ -344,23 +344,37 @@ export default function Dashboard() {
           <SportsColumn />
         </section>
 
-        {/* Reminder Lists - one column per list */}
-        {listNames.slice(0, 2).map((listName, idx) => (
-          <section key={listName}>
-            <TasksColumn
-              title={listName}
-              tasks={reminderLists[listName] || []}
-              accentColor={idx === 0 ? COLORS.work : COLORS.personal}
-            />
-          </section>
-        ))}
-        {listNames.length === 0 && !loading && (
+        {/* Reminder Lists - always show 2 columns */}
+        {listNames.length >= 2 ? (
+          listNames.slice(0, 2).map((listName, idx) => (
+            <section key={listName}>
+              <TasksColumn
+                title={listName}
+                tasks={reminderLists[listName] || []}
+                accentColor={idx === 0 ? COLORS.work : COLORS.personal}
+              />
+            </section>
+          ))
+        ) : listNames.length === 1 ? (
           <>
             <section>
-              <TasksColumn title="Reminders" tasks={[]} accentColor={COLORS.work} />
+              <TasksColumn
+                title={listNames[0]}
+                tasks={reminderLists[listNames[0]] || []}
+                accentColor={COLORS.work}
+              />
             </section>
             <section>
               <TasksColumn title="Reminders" tasks={[]} accentColor={COLORS.personal} />
+            </section>
+          </>
+        ) : (
+          <>
+            <section>
+              <TasksColumn title={loading ? "Loading..." : "Reminders"} tasks={[]} accentColor={COLORS.work} />
+            </section>
+            <section>
+              <TasksColumn title={loading ? "Loading..." : "Reminders"} tasks={[]} accentColor={COLORS.personal} />
             </section>
           </>
         )}
