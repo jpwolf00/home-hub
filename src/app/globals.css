@@ -132,7 +132,11 @@ body {
   }
 
   .section-title {
-    @apply uppercase tracking-widest font-medium;
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem; /* mb-6 */
     color: var(--text-med);
   }
 

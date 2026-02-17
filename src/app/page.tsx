@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import FrenchWidget from '@/components/widgets/FrenchWidget';
+import FrenchNewsWidget from '@/components/widgets/FrenchNewsWidget';
 
 // Color tokens from spec
 const COLORS = {
@@ -243,6 +244,8 @@ function SportsColumn() {
       </div>
 
       <TopStoriesWidget />
+
+      <FrenchNewsWidget />
     </div>
   );
 }
@@ -400,9 +403,6 @@ function MarketColumn() {
 
       {/* French Learning Widget with Countdown */}
       <FrenchWidget />
-
-      {/* Home Network */}
-      <HomeNetworkWidget />
     </div>
   );
 }
