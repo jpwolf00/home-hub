@@ -359,16 +359,19 @@ function MarketColumn() {
   const [stocks, setStocks] = useState<any[]>([]);
 
   useEffect(() => {
-    // Major market proxies (EOD-ish via Stooq):
-    // - SPY (S&P 500)
-    // - QQQ (Nasdaq 100)
-    // - DIA (Dow Jones)
-    fetch('/api/stocks?symbols=SPY,QQQ,DIA')
-      .then(r => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setStocks(data);
-      })
-      .catch(() => {});
+    const fetchStocks = () => {
+      fetch('/api/stocks?symbols=SPY,QQQ,DIA')
+        .then(r => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setStocks(data);
+        })
+        .catch(() => {});
+    };
+    
+    // Fetch immediately and then every 5 minutes
+    fetchStocks();
+    const interval = setInterval(fetchStocks, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
