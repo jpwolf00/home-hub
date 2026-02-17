@@ -47,6 +47,10 @@ export async function GET() {
         headers: { 'X-Auth-Token': API_KEY },
         params: { dateFrom: today, dateTo: twoWeeksLater },
       }),
+      axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.champions}/matches`, {
+        headers: { 'X-Auth-Token': API_KEY },
+        params: { dateFrom: today, dateTo: twoWeeksLater },
+      }),
       axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.leagueOne}/matches`, {
         headers: { 'X-Auth-Token': API_KEY },
         params: { dateFrom: today, dateTo: twoWeeksLater },
