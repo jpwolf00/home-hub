@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import FrenchWidget from '@/components/widgets/FrenchWidget';
 
 // Color tokens from spec
 const COLORS = {
@@ -385,6 +386,9 @@ function MarketColumn() {
 
       {/* Home Network */}
       <HomeNetworkWidget />
+
+      {/* French Learning Widget */}
+      <FrenchWidget />
     </div>
   );
 }
