@@ -78,25 +78,30 @@ function WeatherWidget() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-6">
-        <span className="text-6xl">{iconMap[weather.icon] || '🌡️'}</span>
+    <div className="flex items-center gap-6">
+      {/* Current conditions */}
+      <div className="flex items-center gap-4">
+        <span className="text-5xl">{iconMap[weather.icon] || '🌡️'}</span>
         <div>
-          <div className="text-4xl font-medium">{weather.temp}°F</div>
-          <div className="text-xl text-white/60">{weather.description}</div>
-          <div className="text-lg text-white/40">{weather.city}</div>
+          <div className="text-3xl font-medium">{weather.temp}°F</div>
+          <div className="text-lg text-white/60">{weather.description}</div>
+          <div className="text-md text-white/40">{weather.city}</div>
         </div>
       </div>
+      
+      {/* Vertical separator */}
+      <div className="h-16 w-px bg-white/20"></div>
+      
       {/* 7-day forecast */}
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="flex gap-4 mt-2">
+        <div className="flex gap-3">
           {weather.forecast.slice(0, 7).map((day: any, i: number) => (
-            <div key={i} className="flex flex-col items-center gap-1">
+            <div key={i} className="flex flex-col items-center gap-0.5 min-w-[50px]">
               <div className="text-xs text-white/50">{day.day}</div>
-              <div className="text-xl">{iconMap[day.icon] || '🌡️'}</div>
+              <div className="text-lg">{iconMap[day.icon] || '🌡️'}</div>
               <div className="text-sm text-white">
                 <span className="text-white/70">{day.low}°</span>
-                <span className="mx-1">/</span>
+                <span className="mx-0.5">/</span>
                 <span>{day.high}°</span>
               </div>
             </div>
