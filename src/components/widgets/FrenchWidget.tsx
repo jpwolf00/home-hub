@@ -125,14 +125,16 @@ const FRENCH_PHRASES = [
   { french: 'Le tourisme', english: 'Tourism' },
 ];
 
-// Countdown target date: May 9, 2026
-const TRIP_DATE = new Date('2026-05-09T00:00:00');
+// Countdown target date: May 9, 2026 (Paris trip)
+const TRIP_DATE = new Date('2026-05-09T00:00:00-04:00'); // Eastern time
 
 export default function FrenchWidget() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Rotate phrases every 60 seconds
     const phraseInterval = setInterval(() => {
       setPhraseIndex((prev) => (prev + 1) % FRENCH_PHRASES.length);
@@ -173,18 +175,24 @@ export default function FrenchWidget() {
           <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
         </div>
         <div className="flex gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">{countdown.days}</div>
-            <div className="text-xs text-white/50">Days</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">{countdown.hours}</div>
-            <div className="text-xs text-white/50">Hours</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">{countdown.minutes}</div>
-            <div className="text-xs text-white/50">Minutes</div>
-          </div>
+          {!mounted ? (
+            <div className="text-xl text-white/40">Loading...</div>
+          ) : (
+            <>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">{countdown.days}</div>
+                <div className="text-xs text-white/50">Days</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">{countdown.hours}</div>
+                <div className="text-xs text-white/50">Hours</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">{countdown.minutes}</div>
+                <div className="text-xs text-white/50">Minutes</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
