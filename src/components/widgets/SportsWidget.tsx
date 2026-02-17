@@ -11,6 +11,20 @@ interface Match {
   status: string
   date: string
   league: string
+  isHome?: boolean
+}
+
+// Team emoji logos
+const TEAM_LOGOS: Record<string, string> = {
+  'Kentucky': '🔵',
+  'Georgia': '🔴',
+  'Auburn': '🟠',
+  'Chelsea': '🔵',
+  'Burnley': '🟣',
+  'Wrexham': '🐉',
+  'Wycombe': '🟡',
+  'PSG': '🔴🔵',
+  'Lille': '🟠',
 }
 
 export default function SportsWidget() {
@@ -76,6 +90,9 @@ export default function SportsWidget() {
         <ul className="space-y-3">
           {matches.slice(0, 4).map(match => {
             const { gameDate, gameTime } = formatDateTime(match.date)
+            const homeLogo = TEAM_LOGOS[match.homeTeam] || '⚽'
+            const awayLogo = TEAM_LOGOS[match.awayTeam] || '⚽'
+            const homeAwayLabel = match.isHome === true ? 'HOME' : match.isHome === false ? 'AWAY' : ''
             return (
             <li key={match.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-1">
@@ -85,11 +102,19 @@ export default function SportsWidget() {
                 <span className="text-xs text-white/30">{match.league}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white font-medium">{match.homeTeam}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{homeLogo}</span>
+                  <span className="text-sm text-white font-medium">{match.homeTeam}</span>
+                  {homeAwayLabel === 'HOME' && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
+                </div>
                 <span className="text-sm text-white/70 px-2">
                   {match.homeScore !== null ? `${match.homeScore} - ${match.awayScore}` : 'vs'}
                 </span>
-                <span className="text-sm text-white font-medium">{match.awayTeam}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white font-medium">{match.awayTeam}</span>
+                  <span className="text-lg">{awayLogo}</span>
+                  {homeAwayLabel === 'AWAY' && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
+                </div>
               </div>
             </li>
             )

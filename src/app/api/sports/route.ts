@@ -3,6 +3,18 @@ import axios from 'axios'
 
 const API_KEY = process.env.FOOTBALL_DATA_API_KEY || ''
 
+// Team configurations with logos
+const TEAMS: Record<string, { name: string; logo: string; isHome?: (team: string) => boolean }> = {
+  'Chelsea': { name: 'Chelsea', logo: '🔵' },
+  'PSG': { name: 'Paris SG', logo: '🔴🔵' },
+  'Wrexham': { name: 'Wrexham', logo: '🐉' },
+  'Kentucky': { name: 'Kentucky', logo: '🔵' },
+  'Georgia': { name: 'Georgia', logo: '🔴' },
+  'Auburn': { name: 'Auburn', logo: '🟠' },
+  'Burnley': { name: 'Burnley', logo: '🟣' },
+  'Wycombe': { name: 'Wycombe', logo: '🟡' },
+}
+
 // Competition IDs to fetch
 const COMPETITIONS = {
   premier: 2021,   // Premier League
@@ -41,7 +53,7 @@ export async function GET() {
     ])
 
     // Process all matches - filter to teams we care about
-    const teamIds = [15, 524, 1012] // Chelsea, PSG, Wrexham
+    const teamIds = [15, 524, 1012, 2624] // Chelsea, PSG, Wrexham, Kentucky (NCAA)
     
     results.forEach((result) => {
       if (result.status === 'fulfilled') {
@@ -57,6 +69,7 @@ export async function GET() {
               status: m.status,
               date: m.utcDate,
               league: m.competition.name,
+              isHome: true, // API doesn't easily tell us, default to home for now
             })
           }
         })
@@ -72,6 +85,7 @@ export async function GET() {
 
 function getLocalSchedule() {
   // Current schedule - will update weekly
+  // Kentucky vs Georgia: 9 PM EST on Feb 17 = 02:00 UTC Feb 18
   return [
     // UK Wildcats Basketball
     {
@@ -81,8 +95,9 @@ function getLocalSchedule() {
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: '2026-02-17T21:00:00Z',
+      date: '2026-02-18T02:00:00Z',
       league: 'NCAA Basketball',
+      isHome: true,
     },
     {
       id: 102,
@@ -93,6 +108,7 @@ function getLocalSchedule() {
       status: 'SCHEDULED',
       date: '2026-02-21T01:30:00Z',
       league: 'NCAA Basketball',
+      isHome: true,
     },
     // Chelsea
     {
@@ -104,6 +120,19 @@ function getLocalSchedule() {
       status: 'SCHEDULED',
       date: '2026-02-21T15:00:00Z',
       league: 'Premier League',
+      isHome: true,
+    },
+    // PSG (Ligue 1)
+    {
+      id: 401,
+      homeTeam: 'PSG',
+      awayTeam: 'Lille',
+      homeScore: null,
+      awayScore: null,
+      status: 'SCHEDULED',
+      date: '2026-02-21T20:00:00Z',
+      league: 'Ligue 1',
+      isHome: true,
     },
     // Wrexham
     {
@@ -115,6 +144,7 @@ function getLocalSchedule() {
       status: 'SCHEDULED',
       date: '2026-02-22T15:00:00Z',
       league: 'League One',
+      isHome: true,
     },
   ]
 }
