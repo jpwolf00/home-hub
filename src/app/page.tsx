@@ -183,21 +183,21 @@ function SportsColumn() {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
-  // Team logos (using Wikipedia/official sources)
+  // Team logos - emojis styled for visibility
   const TEAM_LOGOS: Record<string, string> = {
-    'Kentucky': 'https://upload.wikimedia.org/wikipedia/commons/2/29/Kentucky_Wildcats_logo.svg',
-    'Georgia': 'https://upload.wikimedia.org/wikipedia/commons/9/94/Georgia_Bulldogs_logo.svg',
-    'Auburn': 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Auburn_Tigers_logo.svg',
-    'Chelsea': 'https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg',
-    'Burnley': 'https://upload.wikimedia.org/wikipedia/en/6/62/Burnley_FC.svg',
-    'Wrexham': 'https://upload.wikimedia.org/wikipedia/en/d/d6/Wrexham_AFC_logo.svg',
-    'Wycombe': 'https://upload.wikimedia.org/wikipedia/en/5/5d/Wycombe_Wanderers_FC.svg',
-    'PSG': 'https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_FC.svg',
-    'Lille': 'https://upload.wikimedia.org/wikipedia/en/8/86/Lille_OSC_logo.svg',
-    'Bristol City': 'https://upload.wikimedia.org/wikipedia/en/8/8a/Bristol_City_FC.svg',
+    'Kentucky': '🔵',
+    'Georgia': '🐕',
+    'Auburn': '🐯',
+    'Chelsea': '🔵',
+    'Burnley': '🔥',
+    'Wrexham': '🐉',
+    'Wycombe': '🦅',
+    'PSG': '🔴🔵',
+    'Lille': '🟠',
+    'Bristol City': '🔴',
   };
 
-  const getLogo = (team: string) => TEAM_LOGOS[team] || null;
+  const getLogo = (team: string) => TEAM_LOGOS[team] || '⚽';
 
   const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 6);
 
@@ -217,22 +217,14 @@ function SportsColumn() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {homeLogo ? (
-                    <img src={homeLogo} alt={m.homeTeam} className="w-8 h-8 object-contain" />
-                  ) : (
-                    <span className="text-lg">⚽</span>
-                  )}
+                  <span className="text-2xl">{homeLogo}</span>
                   <span className="font-medium">{m.homeTeam}</span>
                   {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
                 <span className="text-lg text-white/50">vs</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{m.awayTeam}</span>
-                  {awayLogo ? (
-                    <img src={awayLogo} alt={m.awayTeam} className="w-8 h-8 object-contain" />
-                  ) : (
-                    <span className="text-lg">⚽</span>
-                  )}
+                  <span className="text-2xl">{awayLogo}</span>
                   {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
