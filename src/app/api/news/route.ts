@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
 
 const FEEDS = [
-  // NOTE: Reuters/AP direct RSS frequently fails (DNS / anti-bot / mirror changes).
-  // We keep this ticker on stable, free RSS sources for now.
-  'http://rss.cnn.com/rss/cnn_topstories.rss',
-  'https://feeds.bbci.co.uk/news/world/rss.xml',
+  // NYT World News - fresh, reliable
+  'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+  // NBC News for variety
+  'https://feeds.nbcnews.com/nbcnews/topheads',
 ]
 
-// Cache news for 5 minutes
+// Cache news for 3 minutes
 let cache: { data: string[]; timestamp: number } | null = null
-const CACHE_TTL = 300000 // 5 minutes
+const CACHE_TTL = 180000 // 3 minutes
 
 function decodeHtml(s: string) {
   return s
