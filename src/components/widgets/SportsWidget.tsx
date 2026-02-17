@@ -14,20 +14,42 @@ interface Match {
   isHome?: boolean
 }
 
-// Team logo URLs - using text only for now
-// To add images: add URL to this object, then update getLogo to return <img> instead
+// Team logo paths
 const TEAM_LOGOS: Record<string, string> = {
+  // SEC
   'Kentucky': '/logos/sec/kentucky.png',
   'Georgia': '/logos/sec/georgia.png',
   'Auburn': '/logos/sec/auburn.png',
+  // Premier League
   'Chelsea': '/logos/premier-league/chelsea.png',
   'Burnley': '/logos/premier-league/burnley.png',
-  'Wrexham': '/logos/english-leagues/wrexham.png',
-  'Wycombe': '/logos/english-leagues/wycombe.png',
+  // Ligue 1
   'PSG': '/logos/ligue-1/psg.png',
   'Lille': '/logos/ligue-1/lille.png',
   'Monaco': '/logos/ligue-1/monaco.png',
+  // English leagues
+  'Wrexham': '/logos/english-leagues/wrexham.png',
+  'Wycombe': '/logos/english-leagues/wycombe.png',
   'Bristol City': '/logos/english-leagues/bristol-city.png',
+  // Championship
+  'Leicester': '/logos/championship/leicester.png',
+  'Sheffield Wednesday': '/logos/championship/sheffield-wednesday.png',
+  'Sunderland': '/logos/championship/sunderland.png',
+  'Middlesbrough': '/logos/championship/middlesbrough.png',
+  'West Brom': '/logos/championship/west-bromwich-albion.png',
+  'Watford': '/logos/championship/watford.png',
+  'Preston': '/logos/championship/preston-north-end.png',
+  'Hull': '/logos/championship/hull-city.png',
+  'Cardiff': '/logos/championship/cardiff-city.png',
+  'Swansea': '/logos/championship/swanseacity.png',
+  'Blackburn': '/logos/championship/blackburn-rovers.png',
+  'Derby': '/logos/championship/derby-county.png',
+  'Oxford': '/logos/championship/oxford-united.png',
+  'Millwall': '/logos/championship/millwall.png',
+  'Luton': '/logos/championship/luton-town.png',
+  'QPR': '/logos/championship/queens-park-rangers.png',
+  'Coventry': '/logos/championship/coventry-city.png',
+  'Ipswich': '/logos/championship/ipswich.png',
 }
 
 const getLogo = (team: string) => TEAM_LOGOS[team] || '';
