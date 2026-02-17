@@ -17,16 +17,16 @@ interface Match {
 // Team logo URLs - using text only for now
 // To add images: add URL to this object, then update getLogo to return <img> instead
 const TEAM_LOGOS: Record<string, string> = {
-  'Kentucky': '',
-  'Georgia': '',
-  'Auburn': '',
-  'Chelsea': '',
-  'Burnley': '',
+  'Kentucky': '/logos/sec/kentucky.png',
+  'Georgia': '/logos/sec/georgia.png',
+  'Auburn': '/logos/sec/auburn.png',
+  'Chelsea': '/logos/premier-league/chelsea.png',
+  'Burnley': '/logos/premier-league/burnley.png',
   'Wrexham': '',
   'Wycombe': '',
-  'PSG': '',
-  'Lille': '',
-  'Monaco': '',
+  'PSG': '/logos/ligue-1/psg.png',
+  'Lille': '/logos/ligue-1/lille.png',
+  'Monaco': '/logos/ligue-1/monaco.png',
   'Bristol City': '',
 }
 
@@ -95,6 +95,8 @@ export default function SportsWidget() {
           {matches.slice(0, 4).map(match => {
             const { gameDate, gameTime } = formatDateTime(match.date)
             const homeAwayLabel = match.isHome === true ? 'HOME' : match.isHome === false ? 'AWAY' : ''
+            const homeLogo = getLogo(match.homeTeam)
+            const awayLogo = getLogo(match.awayTeam)
             return (
             <li key={match.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-1">
@@ -105,6 +107,7 @@ export default function SportsWidget() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
+                  {homeLogo && <img src={homeLogo} alt={match.homeTeam} className="w-6 h-6 object-contain" />}
                   <span className="text-sm text-white font-medium">{match.homeTeam}</span>
                   {homeAwayLabel === 'HOME' && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
@@ -113,6 +116,7 @@ export default function SportsWidget() {
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-white font-medium">{match.awayTeam}</span>
+                  {awayLogo && <img src={awayLogo} alt={match.awayTeam} className="w-6 h-6 object-contain" />}
                   {homeAwayLabel === 'AWAY' && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
