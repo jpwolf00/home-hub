@@ -8,7 +8,7 @@ const LON = -84.50
 export async function GET() {
   try {
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&temperature_unit=fahrenheit`
+      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`
     )
     
     if (!response.ok) {
@@ -17,6 +17,7 @@ export async function GET() {
     
     const data = await response.json()
     const current = data.current
+    const daily = data.daily
     
     // Map weather code to description and icon
     const weatherCodes: Record<number, { description: string; icon: string }> = {
@@ -46,6 +47,20 @@ export async function GET() {
     const code = current.weather_code
     const weather = weatherCodes[code] || { description: 'Unknown', icon: '01d' }
     
+    // Build forecast array
+    const forecast = daily.time.map((date: string, i: number) => {
+      const dayCode = daily.weather_code[i]
+      const dayWeather = weatherCodes[dayCode] || { description: 'Unknown', icon: '01d' }
+      return {
+        date,
+        day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+        high: Math.round(daily.temperature_2m_max[i]),
+        low: Math.round(daily.temperature_2m_min[i]),
+        icon: dayWeather.icon,
+        description: dayWeather.description,
+      }
+    })
+    
     return NextResponse.json({
       temp: current.temperature_2m,
       feelsLike: current.apparent_temperature,
@@ -53,6 +68,7 @@ export async function GET() {
       description: weather.description,
       icon: weather.icon,
       city: 'Lexington',
+      forecast,
     })
   } catch (error) {
     console.error('Weather API error:', error)

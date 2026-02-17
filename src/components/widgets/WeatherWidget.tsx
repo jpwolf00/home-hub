@@ -2,6 +2,15 @@
 
 import { useState, useEffect } from 'react'
 
+interface ForecastDay {
+  date: string
+  day: string
+  high: number
+  low: number
+  icon: string
+  description: string
+}
+
 interface WeatherData {
   temp: number
   feelsLike: number
@@ -9,6 +18,7 @@ interface WeatherData {
   description: string
   icon: string
   city: string
+  forecast: ForecastDay[]
 }
 
 export default function WeatherWidget() {
@@ -72,6 +82,26 @@ export default function WeatherWidget() {
             <span>💧 {weather.humidity}%</span>
             <span>Feels {Math.round(weather.feelsLike)}°</span>
           </div>
+          
+          {/* 7-Day Forecast */}
+          {weather.forecast && weather.forecast.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <p className="text-xs text-white/50 mb-2">7-Day Forecast</p>
+              <div className="flex justify-between gap-1">
+                {weather.forecast.map((day, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <span className="text-xs text-white/60">{day.day}</span>
+                    <span className="text-lg">{getIcon(day.icon)}</span>
+                    <span className="text-xs text-white">
+                      <span className="text-white/70">{day.low}°</span>
+                      <span className="mx-1">/</span>
+                      <span>{day.high}°</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <p className="text-white/50 text-sm">No data</p>

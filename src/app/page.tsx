@@ -398,11 +398,11 @@ function MarketColumn() {
         })}
       </div>
 
+      {/* French Learning Widget with Countdown */}
+      <FrenchWidget />
+
       {/* Home Network */}
       <HomeNetworkWidget />
-
-      {/* French Learning Widget */}
-      <FrenchWidget />
     </div>
   );
 }
