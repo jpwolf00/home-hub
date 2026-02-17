@@ -182,6 +182,20 @@ function SportsColumn() {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
+  // Team emoji logos
+  const TEAM_LOGOS: Record<string, string> = {
+    'Kentucky': '🔵',
+    'Georgia': '🔴',
+    'Auburn': '🟠',
+    'Chelsea': '🔵',
+    'Burnley': '🟣',
+    'Wrexham': '🐉',
+    'Wycombe': '🟡',
+    'PSG': '🔴🔵',
+    'Lille': '🟠',
+    'Bristol City': '🔴',
+  };
+
   const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 6);
 
   return (
@@ -190,15 +204,23 @@ function SportsColumn() {
         <h3 className="text-2xl mb-6 section-title">Upcoming Games</h3>
         <div className="space-y-6">
           {upcomingGames.map((m: any) => (
-            <div key={m.id}>
-              <div className="flex items-center justify-between text-2xl mb-2">
-                <span className="font-medium">{m.homeTeam}</span>
-                <span className="text-lg text-white/50">vs</span>
-                <span className="font-medium">{m.awayTeam}</span>
-              </div>
-              <div className="flex items-center justify-between text-xl text-white/50">
+            <div key={m.id} className="bg-white/5 rounded-lg p-3">
+              <div className="flex items-center justify-between text-xl text-white/50 mb-2">
                 <span>{formatDate(m.date)}</span>
                 <span>{formatTime(m.date)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{TEAM_LOGOS[m.homeTeam] || '⚽'}</span>
+                  <span className="font-medium">{m.homeTeam}</span>
+                  {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
+                </div>
+                <span className="text-lg text-white/50">vs</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{m.awayTeam}</span>
+                  <span className="text-lg">{TEAM_LOGOS[m.awayTeam] || '⚽'}</span>
+                  {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
+                </div>
               </div>
             </div>
           ))}
