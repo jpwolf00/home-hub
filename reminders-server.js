@@ -10,7 +10,6 @@ const { execSync } = require('child_process');
 
 const PORT = 3456;
 
-// Cache reminders for 30 seconds to avoid slow AppleScript calls on every request
 let cache = { data: [], timestamp: 0 };
 const CACHE_TTL = 30000;
 
@@ -20,91 +19,97 @@ function getReminders() {
     return cache.data;
   }
 
-  // Use JXA (JavaScript for Automation) instead of AppleScript - faster and easier to parse
-  const script = `
-    const app = Application("Reminders");
-    const results = [];
-    const lists = app.lists();
-    for (let i = 0; i < lists.length; i++) {
-      const listName = lists[i].name();
-      const rems = lists[i].reminders.whose({completed: false})();
-      for (let j = 0; j < rems.length; j++) {
-        results.push(listName + ":::" + rems[j].name());
-      }
-    }
-    results.join("|||");
-  `;
-
+  // Two fast batch calls: get all list names, then all incomplete reminder names
+  // This avoids per-reminder iteration which is extremely slow
   try {
     const start = Date.now();
-    const result = execSync(`osascript -l JavaScript -e '${script}'`, {
-      encoding: 'utf8',
-      timeout: 60000,
-    }).trim();
-    const elapsed = Date.now() - start;
-    console.log(`JXA completed in ${elapsed}ms`);
 
-    const reminders = [];
-    if (result.length > 0) {
-      const entries = result.split('|||').filter(e => e.trim().length > 0);
+    // Get list names and their reminder counts to build a mapping
+    const listScript = `
+      tell application "Reminders"
+        set listOutput to ""
+        repeat with L in every list
+          set n to name of L
+          set c to count of (reminders of L whose completed is false)
+          if c > 0 then
+            set listOutput to listOutput & n & ":::" & c & "|||"
+          end if
+        end repeat
+        return listOutput
+      end tell
+    `;
+
+    const nameScript = `
+      tell application "Reminders"
+        set allNames to name of (every reminder whose completed is false)
+        set output to ""
+        repeat with n in allNames
+          set output to output & n & "|||"
+        end repeat
+        return output
+      end tell
+    `;
+
+    // Run both - list info is fast (just counts), names we know works
+    const listResult = execSync(`osascript -e '${listScript}'`, {
+      encoding: 'utf8',
+      timeout: 30000,
+    }).trim();
+
+    const nameResult = execSync(`osascript -e '${nameScript}'`, {
+      encoding: 'utf8',
+      timeout: 30000,
+    }).trim();
+
+    const elapsed = Date.now() - start;
+    console.log(`AppleScript completed in ${elapsed}ms`);
+
+    // Parse list counts: "Work:::3|||Family:::2|||"
+    const listCounts = [];
+    if (listResult.length > 0) {
+      const entries = listResult.split('|||').filter(e => e.includes(':::'));
       for (const entry of entries) {
-        const sepIdx = entry.indexOf(':::');
-        if (sepIdx === -1) continue;
-        const list = entry.substring(0, sepIdx).trim();
-        const title = entry.substring(sepIdx + 3).trim();
-        reminders.push({ title, completed: false, list });
+        const [name, countStr] = entry.split(':::');
+        listCounts.push({ name: name.trim(), count: parseInt(countStr) });
       }
     }
 
+    // Parse reminder names
+    const names = nameResult.length > 0
+      ? nameResult.split('|||').filter(n => n.trim().length > 0).map(n => n.trim())
+      : [];
+
+    // Map names to lists based on counts
+    // Reminders API returns them grouped by list in order
+    const reminders = [];
+    let nameIdx = 0;
+    for (const list of listCounts) {
+      for (let i = 0; i < list.count && nameIdx < names.length; i++) {
+        reminders.push({ title: names[nameIdx], completed: false, list: list.name });
+        nameIdx++;
+      }
+    }
+    // Any remaining (shouldn't happen, but just in case)
+    while (nameIdx < names.length) {
+      reminders.push({ title: names[nameIdx], completed: false, list: 'Other' });
+      nameIdx++;
+    }
+
+    console.log(`Lists: ${listCounts.map(l => `${l.name}(${l.count})`).join(', ')}`);
     cache = { data: reminders, timestamp: now };
     return reminders;
   } catch (e) {
-    console.error('Error running JXA:', e.message);
-    // Fallback: try simple AppleScript without list names
-    try {
-      console.log('Falling back to simple AppleScript...');
-      const fallbackScript = `
-        tell application "Reminders"
-          set allNames to name of (every reminder whose completed is false)
-          set output to ""
-          repeat with n in allNames
-            set output to output & n & "|||"
-          end repeat
-          return output
-        end tell
-      `;
-      const start2 = Date.now();
-      const result2 = execSync(`osascript -e '${fallbackScript}'`, {
-        encoding: 'utf8',
-        timeout: 60000,
-      }).trim();
-      console.log(`Fallback AppleScript completed in ${Date.now() - start2}ms`);
-
-      const reminders = [];
-      if (result2.length > 0) {
-        const names = result2.split('|||').filter(n => n.trim().length > 0);
-        for (const name of names) {
-          reminders.push({ title: name.trim(), completed: false, list: 'Reminders' });
-        }
-      }
-      cache = { data: reminders, timestamp: now };
-      return reminders;
-    } catch (e2) {
-      console.error('Fallback also failed:', e2.message);
-      if (cache.data.length > 0) return cache.data;
-      return [];
-    }
+    console.error('Error:', e.message);
+    if (cache.data.length > 0) return cache.data;
+    return [];
   }
 }
 
-// Pre-fetch on startup so the first request is fast
+// Pre-fetch on startup
 setTimeout(() => {
   console.log('Pre-fetching reminders...');
   const reminders = getReminders();
-  console.log(`Cached ${reminders.length} reminders on startup`);
-  const lists = {};
-  reminders.forEach(r => { lists[r.list] = (lists[r.list] || 0) + 1; });
-  Object.entries(lists).forEach(([name, count]) => console.log(`  ${name}: ${count}`));
+  console.log(`Cached ${reminders.length} reminders`);
 }, 1000);
 
 const server = http.createServer((req, res) => {
