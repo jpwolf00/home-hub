@@ -196,3 +196,14 @@ body {
     background: none !important;
   }
 }
+
+/* 4K displays - scale up fonts */
+@media (min-width: 2560px) {
+  html {
+    font-size: 20px;
+  }
+  
+  .ticker-text {
+    font-size: 2.5rem;
+  }
+}
