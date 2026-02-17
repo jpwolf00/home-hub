@@ -184,21 +184,65 @@ function SportsColumn() {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
-  // Team logos - emojis styled for visibility
+  // Team logo paths - images for major leagues
   const TEAM_LOGOS: Record<string, string> = {
-    'Kentucky': '🔵',
-    'Georgia': '🐕',
-    'Auburn': '🐯',
-    'Chelsea': '🔵',
-    'Burnley': '🔥',
-    'Wrexham': '🐉',
-    'Wycombe': '🦅',
-    'PSG': '🔴🔵',
-    'Lille': '🟠',
-    'Bristol City': '🔴',
+    // SEC
+    'Kentucky': '/logos/sec/kentucky.png',
+    'Georgia': '/logos/sec/georgia.png',
+    'Auburn': '/logos/sec/auburn.png',
+    // Premier League
+    'Chelsea': '/logos/premier-league/chelsea.png',
+    'Burnley': '/logos/premier-league/burnley.png',
+    'Arsenal': '/logos/premier-league/arsenal.png',
+    'Aston Villa': '/logos/premier-league/aston-villa.png',
+    'Bournemouth': '/logos/premier-league/bournemouth.png',
+    'Brentford': '/logos/premier-league/brentford.png',
+    'Brighton': '/logos/premier-league/brighton.png',
+    'Crystal Palace': '/logos/premier-league/crystal-palace.png',
+    'Everton': '/logos/premier-league/everton.png',
+    'Fulham': '/logos/premier-league/fulham.png',
+    'Liverpool': '/logos/premier-league/liverpool.png',
+    'Manchester City': '/logos/premier-league/manchester-city.png',
+    'Manchester United': '/logos/premier-league/manchester-united.png',
+    'Newcastle': '/logos/premier-league/newcastle-united.png',
+    'Nottingham Forest': '/logos/premier-league/nottingham-forest.png',
+    'Tottenham': '/logos/premier-league/tottenham-hotspur.png',
+    'West Ham': '/logos/premier-league/west-ham-united.png',
+    'Wolves': '/logos/premier-league/wolverhampton-wanderers.png',
+    'Ipswich': '/logos/premier-league/ipswich.png',
+    'Southampton': '/logos/premier-league/southampton.png',
+    // Ligue 1
+    'PSG': '/logos/ligue-1/psg.png',
+    'Lille': '/logos/ligue-1/lille.png',
+    'Monaco': '/logos/ligue-1/monaco.png',
+    // English leagues
+    'Wrexham': '/logos/english-leagues/wrexham.png',
+    'Wycombe': '/logos/english-leagues/wycombe.png',
+    'Bristol City': '/logos/english-leagues/bristol-city.png',
+    // Championship
+    'Leicester': '/logos/championship/leicester.png',
+    'Leeds': '/logos/championship/leeds-united.png',
+    'Sheffield Wednesday': '/logos/championship/sheffield-wednesday.png',
+    'Sunderland': '/logos/championship/sunderland.png',
+    'Middlesbrough': '/logos/championship/middlesbrough.png',
+    'West Brom': '/logos/championship/west-bromwich-albion.png',
+    'Watford': '/logos/championship/watford.png',
+    'Preston': '/logos/championship/preston-north-end.png',
+    'Hull': '/logos/championship/hull-city.png',
+    'Cardiff': '/logos/championship/cardiff-city.png',
+    'Swansea': '/logos/championship/swanseacity.png',
+    'Blackburn': '/logos/championship/blackburn-rovers.png',
+    'Derby': '/logos/championship/derby-county.png',
+    'Oxford': '/logos/championship/oxford-united.png',
+    'Millwall': '/logos/championship/millwall.png',
+    'Luton': '/logos/championship/luton-town.png',
+    'QPR': '/logos/championship/queens-park-rangers.png',
+    'Stoke': '/logos/championship/stoke-city.png',
+    'Coventry': '/logos/championship/coventry-city.png',
+    'Ipswich Town': '/logos/premier-league/ipswich.png',
   };
 
-  const getLogo = (team: string) => TEAM_LOGOS[team] || '⚽';
+  const getLogo = (team: string) => TEAM_LOGOS[team] || '';
 
   // Sort by date and show next 5 games
   const upcomingGames = matches
@@ -223,14 +267,14 @@ function SportsColumn() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl">{homeLogo}</span>
+                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-8 h-8 object-contain" />}
                   <span className="text-2xl font-medium">{m.homeTeam}</span>
                   {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
                 <span className="text-xl text-white/50">vs</span>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-medium">{m.awayTeam}</span>
-                  <span className="text-3xl">{awayLogo}</span>
+                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-8 h-8 object-contain" />}
                   {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
