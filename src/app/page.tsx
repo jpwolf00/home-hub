@@ -127,7 +127,7 @@ function TopStoriesWidget() {
 
   return (
     <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 overflow-hidden">
-      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Top Stories</h3>
+      <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
       <div className="space-y-6">
         {visible.map((s: any) => (
           <div key={s.id || s.link} className="flex gap-6">
@@ -187,7 +187,7 @@ function SportsColumn() {
   return (
     <div className="flex flex-col gap-8 h-full">
       <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
-        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Upcoming Games</h3>
+        <h3 className="text-2xl mb-6 section-title">Upcoming Games</h3>
         <div className="space-y-6">
           {upcomingGames.map((m: any) => (
             <div key={m.id}>
@@ -267,7 +267,7 @@ function HomeNetworkWidget() {
 
   return (
     <div className="mt-2 flex-1">
-      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest flex items-center justify-between">
+      <h3 className="text-2xl mb-6 section-title flex items-center justify-between">
         <span>Home Network</span>
         {isStale && <span className="text-sm text-amber-300/90 tracking-wider">STALE</span>}
       </h3>
@@ -276,7 +276,7 @@ function HomeNetworkWidget() {
         {servers.slice(0, 6).map((s: any) => {
           const online = s.status === 'online';
           return (
-            <div key={s.id} className="rounded-2xl p-5 bg-[#1C1B1F]/55 border border-white/10">
+            <div key={s.id} className="card-inset p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`w-3 h-3 rounded-full ${online ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -340,8 +340,8 @@ function MarketColumn() {
   return (
     <div className="bg-[#2B2930] rounded-2xl p-8 h-full flex flex-col">
       {/* Indices */}
-      <div className="mb-8 pb-8 border-b-2 border-white/10">
-        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Indices</h3>
+      <div className="mb-8 pb-8 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+        <h3 className="text-2xl mb-6 section-title">Indices</h3>
         {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
           const stock = stocks.find(s => s.symbol === sym);
           if (!stock || stock.error) return null;
@@ -386,7 +386,7 @@ function NewsTicker() {
 
   if (news.length === 0) {
     return (
-      <div className="news-ticker bg-[#1C1B1F] border-t-2 border-white/10 h-20 px-8 flex items-center">
+      <div className="news-ticker border-t-2 h-20 px-8 flex items-center" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
         <span className="text-2xl text-white/50">Loading breaking news…</span>
       </div>
     );
@@ -437,7 +437,7 @@ export default function Dashboard() {
       style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
       {/* Header - LARGE */}
-      <header className="flex items-center justify-between px-12 py-8 border-b-2 border-white/10">
+      <header className="flex items-center justify-between px-12 py-8 border-b-2" style={{ borderColor: 'var(--outline)' }}>
         <div className="flex items-baseline gap-12">
           <DateDisplay />
           <Clock />

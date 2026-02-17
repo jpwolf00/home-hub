@@ -104,13 +104,36 @@ body {
   height: 14px;
 }
 
+/* Material-ish design tokens */
+:root {
+  --bg: #1c1b1f;
+  --surface: #2b2930;
+  --surface-2: rgba(28, 27, 31, 0.55);
+  --outline: rgba(255, 255, 255, 0.10);
+  --text-hi: rgba(255, 255, 255, 0.92);
+  --text-med: rgba(255, 255, 255, 0.70);
+  --text-lo: rgba(255, 255, 255, 0.45);
+
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
 @layer components {
   .card {
-    @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl;
+    @apply rounded-2xl border shadow-xl;
+    background: var(--surface);
+    border-color: var(--outline);
   }
 
-  .card-hover {
-    @apply hover:bg-white/15 transition-all duration-300 hover:scale-[1.02];
+  .card-inset {
+    @apply rounded-2xl border;
+    background: var(--surface-2);
+    border-color: var(--outline);
+  }
+
+  .section-title {
+    @apply uppercase tracking-widest font-medium;
+    color: var(--text-med);
   }
 
   .news-ticker {
