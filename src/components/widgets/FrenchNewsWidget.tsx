@@ -26,8 +26,8 @@ function FrenchNewsWidget() {
           <div className="text-xl text-white/40">No headlines available</div>
         ) : (
           news.headlines.slice(0, 5).map((headline, i) => (
-            <div key={i} className="border-b border-white/10 pb-3 last:border-0">
-              <span className="text-lg text-white/80 block leading-snug">
+            <div key={i} className="border-b border-white/10 pb-4 last:border-0">
+              <span className="text-2xl text-white/80 block leading-snug">
                 {headline}
               </span>
             </div>

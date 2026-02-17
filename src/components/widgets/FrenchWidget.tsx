@@ -169,27 +169,27 @@ export default function FrenchWidget() {
   return (
     <div className="bg-[#2B2930] rounded-2xl p-6">
       {/* Countdown to Trip */}
-      <div className="mb-4 pb-4 border-b border-white/10">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xl">✈️</span>
+      <div className="mb-6 pb-6 border-b border-white/10">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">✈️</span>
           <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-8">
           {!mounted ? (
-            <div className="text-xl text-white/40">Loading...</div>
+            <div className="text-2xl text-white/40">Loading...</div>
           ) : (
             <>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">{countdown.days}</div>
-                <div className="text-xs text-white/50">Days</div>
+                <div className="text-6xl font-bold text-white">{countdown.days}</div>
+                <div className="text-sm text-white/50">Days</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">{countdown.hours}</div>
-                <div className="text-xs text-white/50">Hours</div>
+                <div className="text-6xl font-bold text-white">{countdown.hours}</div>
+                <div className="text-sm text-white/50">Hours</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">{countdown.minutes}</div>
-                <div className="text-xs text-white/50">Minutes</div>
+                <div className="text-6xl font-bold text-white">{countdown.minutes}</div>
+                <div className="text-sm text-white/50">Minutes</div>
               </div>
             </>
           )}
@@ -197,13 +197,13 @@ export default function FrenchWidget() {
       </div>
 
       {/* French Phrase */}
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">🇫🇷</span>
         <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">French</h3>
       </div>
       <div className="space-y-2">
-        <div className="text-3xl font-medium text-white">{phrase.french}</div>
-        <div className="text-xl text-white/60">{phrase.english}</div>
+        <div className="text-5xl font-medium text-white">{phrase.french}</div>
+        <div className="text-2xl text-white/60">{phrase.english}</div>
         <div className="text-xs text-white/30 mt-2">
           {phraseIndex + 1} / {FRENCH_PHRASES.length}
         </div>
