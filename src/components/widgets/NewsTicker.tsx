@@ -37,13 +37,13 @@ export default function NewsTicker() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-white/10 py-2 px-4 news-ticker"
+      className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-white/10 py-5 px-6 news-ticker"
       data-night-hidden="true"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="max-w-7xl mx-auto flex items-center gap-4">
-        <span className="text-xs font-medium text-primary-400 uppercase tracking-wider shrink-0">
+      <div className="max-w-7xl mx-auto flex items-center gap-6">
+        <span className="text-lg font-medium text-primary-400 uppercase tracking-wider shrink-0">
           News
         </span>
         <div className="flex-1 overflow-hidden">
@@ -54,7 +54,7 @@ export default function NewsTicker() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="text-sm text-white/80"
+              className="text-2xl text-white/90"
             >
               {news[currentIndex]?.title}
               <span className="text-white/40 ml-2">— {news[currentIndex]?.source}</span>
