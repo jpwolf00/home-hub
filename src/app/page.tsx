@@ -332,7 +332,7 @@ function NewsTicker() {
   const text = news.join('  •  ');
 
   return (
-    <div className="news-ticker bg-[#1C1B1F] border-t-2 border-white/10 h-20 px-8 flex items-center overflow-hidden ticker">
+    <div className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-20 px-8 flex items-center overflow-hidden ticker">
       <div className="ticker-track">
         <span className="ticker-text">{text}</span>
         <span className="ticker-sep">•</span>
@@ -383,7 +383,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 4 Columns */}
-      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-24">
+      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-32">
         {/* Column 1: Sports */}
         <section>
           <SportsColumn />

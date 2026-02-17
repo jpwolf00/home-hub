@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 
 const FEEDS = [
-  // Reuters Top News
-  'http://feeds.reuters.com/reuters/topNews',
-  // AP Top News (community-maintained RSS mirror)
-  'http://associated-press.s3-website-us-east-1.amazonaws.com/topnews.xml',
+  // NOTE: Reuters/AP direct RSS frequently fails (DNS / anti-bot / mirror changes).
+  // We keep this ticker on stable, free RSS sources for now.
+  'http://rss.cnn.com/rss/cnn_topstories.rss',
+  'https://feeds.bbci.co.uk/news/world/rss.xml',
 ]
 
 // Cache news for 5 minutes
@@ -46,7 +46,7 @@ export async function GET() {
   }
 
   try {
-    const xmls = await Promise.all(
+    const settled = await Promise.allSettled(
       FEEDS.map(async (url) => {
         const response = await fetch(url, {
           signal: AbortSignal.timeout(10000),
@@ -57,6 +57,12 @@ export async function GET() {
         return response.text()
       })
     )
+
+    const xmls = settled
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+      .map((r) => r.value)
+
+    if (xmls.length === 0) throw new Error('All breaking RSS sources failed')
 
     const merged = xmls.flatMap((xml) => extractTitles(xml, 10))
 
