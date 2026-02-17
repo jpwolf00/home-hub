@@ -244,8 +244,6 @@ function SportsColumn() {
       </div>
 
       <TopStoriesWidget />
-
-      <FrenchNewsWidget />
     </div>
   );
 }
@@ -403,6 +401,9 @@ function MarketColumn() {
 
       {/* French Learning Widget with Countdown */}
       <FrenchWidget />
+
+      {/* French News - Headlines for learning */}
+      <FrenchNewsWidget />
     </div>
   );
 }
