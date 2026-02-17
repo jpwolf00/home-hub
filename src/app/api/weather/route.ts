@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 
 // Open-Meteo is free, no API key needed
-// Coordinates for Lexington, KY
-const LAT = 38.04
-const LON = -84.50
+// Coordinates for Lexington, KY (40509)
+const LAT = 37.99
+const LON = -84.48
 
 export async function GET() {
   try {
