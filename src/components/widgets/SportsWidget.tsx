@@ -22,15 +22,15 @@ const TEAM_LOGOS: Record<string, string> = {
   'Auburn': '/logos/sec/auburn.png',
   'Chelsea': '/logos/premier-league/chelsea.png',
   'Burnley': '/logos/premier-league/burnley.png',
-  'Wrexham': '',
-  'Wycombe': '',
+  'Wrexham': '/logos/english-leagues/wrexham.png',
+  'Wycombe': '/logos/english-leagues/wycombe.png',
   'PSG': '/logos/ligue-1/psg.png',
   'Lille': '/logos/ligue-1/lille.png',
   'Monaco': '/logos/ligue-1/monaco.png',
-  'Bristol City': '',
+  'Bristol City': '/logos/english-leagues/bristol-city.png',
 }
 
-const getLogo = (team: string) => '';
+const getLogo = (team: string) => TEAM_LOGOS[team] || '';
 
 export default function SportsWidget() {
   const [matches, setMatches] = useState<Match[]>([])
