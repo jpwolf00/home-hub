@@ -199,7 +199,11 @@ function SportsColumn() {
 
   const getLogo = (team: string) => TEAM_LOGOS[team] || '⚽';
 
-  const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 6);
+  // Sort by date and show next 5 games
+  const upcomingGames = matches
+    .filter(m => m.status === 'SCHEDULED')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 5);
 
   return (
     <div className="flex flex-col gap-8 h-full">
@@ -211,20 +215,21 @@ function SportsColumn() {
             const awayLogo = getLogo(m.awayTeam);
             return (
             <div key={m.id} className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center justify-between text-xl text-white/50 mb-2">
+              <div className="flex items-center justify-center gap-4 text-xl text-white/50 mb-2">
                 <span>{formatDate(m.date)}</span>
+                <span>•</span>
                 <span>{formatTime(m.date)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{homeLogo}</span>
-                  <span className="font-medium">{m.homeTeam}</span>
+                  <span className="text-3xl">{homeLogo}</span>
+                  <span className="text-2xl font-medium">{m.homeTeam}</span>
                   {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
-                <span className="text-lg text-white/50">vs</span>
+                <span className="text-xl text-white/50">vs</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{m.awayTeam}</span>
-                  <span className="text-2xl">{awayLogo}</span>
+                  <span className="text-2xl font-medium">{m.awayTeam}</span>
+                  <span className="text-3xl">{awayLogo}</span>
                   {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
