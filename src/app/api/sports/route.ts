@@ -136,6 +136,17 @@ function getLocalSchedule() {
     },
     // Wrexham
     {
+      id: 302,
+      homeTeam: 'Bristol City',
+      awayTeam: 'Wrexham',
+      homeScore: null,
+      awayScore: null,
+      status: 'SCHEDULED',
+      date: '2026-02-17T19:45:00Z',
+      league: 'Championship',
+      isHome: false,
+    },
+    {
       id: 301,
       homeTeam: 'Wrexham',
       awayTeam: 'Wycombe',

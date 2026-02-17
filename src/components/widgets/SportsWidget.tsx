@@ -25,6 +25,7 @@ const TEAM_LOGOS: Record<string, string> = {
   'Wycombe': '🟡',
   'PSG': '🔴🔵',
   'Lille': '🟠',
+  'Bristol City': '🔴',
 }
 
 export default function SportsWidget() {
