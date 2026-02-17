@@ -1,52 +1,81 @@
 import { NextResponse } from 'next/server'
 
-const RSS_URL = 'https://bullrich.dev/tldr-rss/tech.rss'
+const FEEDS = [
+  // Reuters Top News
+  'http://feeds.reuters.com/reuters/topNews',
+  // AP Top News (community-maintained RSS mirror)
+  'http://associated-press.s3-website-us-east-1.amazonaws.com/topnews.xml',
+]
 
 // Cache news for 5 minutes
 let cache: { data: string[]; timestamp: number } | null = null
 const CACHE_TTL = 300000 // 5 minutes
 
+function decodeHtml(s: string) {
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+}
+
+function extractTitles(xml: string, max: number) {
+  const titles: string[] = []
+  const itemRe = /<item>([\s\S]*?)<\/item>/gi
+  let m: RegExpExecArray | null
+
+  while ((m = itemRe.exec(xml)) !== null && titles.length < max) {
+    const itemXml = m[1]
+    const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/i)
+    if (!titleMatch) continue
+    const raw = titleMatch[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/i, '$1')
+    const title = decodeHtml(raw).trim()
+    if (title) titles.push(title)
+  }
+
+  return titles
+}
+
 export async function GET() {
   const now = Date.now()
-  
-  // Return cached data if fresh
-  if (cache && (now - cache.timestamp) < CACHE_TTL) {
+
+  if (cache && now - cache.timestamp < CACHE_TTL) {
     return NextResponse.json(cache.data)
   }
-  
+
   try {
-    const response = await fetch(RSS_URL, {
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+    const xmls = await Promise.all(
+      FEEDS.map(async (url) => {
+        const response = await fetch(url, {
+          signal: AbortSignal.timeout(10000),
+          next: { revalidate: 60 * 5 },
+          headers: { 'user-agent': 'home-hub-dashboard/1.0' },
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`)
+        return response.text()
+      })
+    )
+
+    const merged = xmls.flatMap((xml) => extractTitles(xml, 10))
+
+    // De-dupe while keeping order
+    const seen = new Set<string>()
+    const titles = merged.filter((t) => {
+      if (seen.has(t)) return false
+      seen.add(t)
+      return true
     })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    
-    const xml = await response.text()
-    
-    // Simple XML parsing for titles
-    const titles: string[] = []
-    const regex = /<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/g
-    let match
-    
-    while ((match = regex.exec(xml)) !== null && titles.length < 10) {
-      const title = match[1] || match[2]
-      // Skip channel title and empty titles
-      if (title && title !== 'TLDR TECH Feed' && title.trim().length > 0) {
-        titles.push(title.trim())
-      }
-    }
-    
-    return NextResponse.json(titles)
+
+    const out = titles.slice(0, 15)
+    cache = { data: out, timestamp: now }
+    return NextResponse.json(out)
   } catch (error) {
-    console.error('Failed to fetch RSS:', error)
+    console.error('Failed to fetch breaking RSS:', error)
     return NextResponse.json([
-      'OpenClaw, OpenAI, and the future',
-      'Anthropic closes $30 billion funding round',
-      'Waymo extends US robotaxi lead',
-      'Google Deep Think AI partners on math',
-      'Apple prepares new Siri features'
+      'Breaking: news feed temporarily unavailable',
+      'Reuters/AP will resume shortly',
     ])
   }
 }

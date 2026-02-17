@@ -87,6 +87,80 @@ function WeatherWidget() {
   );
 }
 
+// Top Stories (Tech/Security/AI) - iOS-style cards
+function TopStoriesWidget() {
+  const [stories, setStories] = useState<any[]>([]);
+  const [start, setStart] = useState(0);
+
+  useEffect(() => {
+    const load = () => {
+      fetch('/api/top-stories?limit=18')
+        .then(r => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setStories(data);
+        })
+        .catch(() => {});
+    };
+
+    load();
+    const refresh = setInterval(load, 10 * 60 * 1000); // refresh feed every 10 min
+    return () => clearInterval(refresh);
+  }, []);
+
+  useEffect(() => {
+    if (stories.length <= 4) return;
+    const interval = setInterval(() => {
+      setStart((s) => (s + 1) % stories.length);
+    }, 45_000); // rotate every 45 seconds
+    return () => clearInterval(interval);
+  }, [stories.length]);
+
+  const visible = stories.length <= 4
+    ? stories
+    : Array.from({ length: 4 }).map((_, idx) => stories[(start + idx) % stories.length]);
+
+  const tagColor = (cat: string) => {
+    if (cat === 'security') return 'bg-red-500/20 text-red-200 border-red-500/30';
+    if (cat === 'ai') return 'bg-purple-500/20 text-purple-200 border-purple-500/30';
+    return 'bg-blue-500/20 text-blue-200 border-blue-500/30';
+  };
+
+  return (
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 overflow-hidden">
+      <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Top Stories</h3>
+      <div className="space-y-6">
+        {visible.map((s: any) => (
+          <div key={s.id || s.link} className="flex gap-6">
+            <div className="w-28 h-20 rounded-xl bg-black/20 overflow-hidden flex-shrink-0">
+              {s.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.image} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-white/5" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <span className={`text-sm px-3 py-1 rounded-full border ${tagColor(s.category)} uppercase tracking-wider`}>{s.category}</span>
+                <span className="text-sm text-white/40 truncate">{s.source}</span>
+              </div>
+              <div
+                className="text-2xl leading-tight text-white/90"
+                style={{ display: '-webkit-box', WebkitLineClamp: 2 as any, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}
+              >
+                {s.title}
+              </div>
+            </div>
+          </div>
+        ))}
+        {visible.length === 0 && (
+          <div className="text-2xl text-white/40">Loading stories…</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Sports Column - LARGE
 function SportsColumn() {
   const [matches, setMatches] = useState<any[]>([]);
@@ -108,34 +182,12 @@ function SportsColumn() {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
-  const recentGames = matches.filter(m => m.status === 'FINISHED').slice(0, 5);
-  const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 5);
+  const upcomingGames = matches.filter(m => m.status === 'SCHEDULED').slice(0, 6);
 
   return (
     <div className="flex flex-col gap-8 h-full">
-      {/* Recent Scores */}
       <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
-        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Recent</h3>
-        <div className="space-y-4">
-          {recentGames.map((m: any) => (
-            <div key={m.id} className="flex items-center justify-between text-2xl">
-              <div className="flex items-center gap-4">
-                <span className="text-green-400 text-2xl">✓</span>
-                <span className="font-medium">{m.homeTeam}</span>
-              </div>
-              <span className="font-mono text-3xl">{m.homeScore} - {m.awayScore}</span>
-              <span className="font-medium">{m.awayTeam}</span>
-            </div>
-          ))}
-          {recentGames.length === 0 && (
-            <div className="text-2xl text-white/40">No recent games</div>
-          )}
-        </div>
-      </div>
-
-      {/* Upcoming */}
-      <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
-        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Upcoming</h3>
+        <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Upcoming Games</h3>
         <div className="space-y-6">
           {upcomingGames.map((m: any) => (
             <div key={m.id}>
@@ -150,8 +202,13 @@ function SportsColumn() {
               </div>
             </div>
           ))}
+          {upcomingGames.length === 0 && (
+            <div className="text-2xl text-white/40">No upcoming games</div>
+          )}
         </div>
       </div>
+
+      <TopStoriesWidget />
     </div>
   );
 }
@@ -186,30 +243,38 @@ function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[
 
 // Market Watch Column - LARGE
 function MarketColumn() {
-  const [stocks, setStocks] = useState<any[]>([
-    { symbol: 'SPY', price: 502.34, change: 0.45 },
-    { symbol: 'QQQ', price: 438.12, change: -0.23 },
-    { symbol: 'AAPL', price: 189.45, change: 1.23 },
-    { symbol: 'GOOG', price: 142.67, change: -0.56 },
-    { symbol: 'TSLA', price: 248.90, change: 2.34 },
-  ]);
+  const [stocks, setStocks] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Major market proxies (EOD-ish via Stooq):
+    // - SPY (S&P 500)
+    // - QQQ (Nasdaq 100)
+    // - DIA (Dow Jones)
+    fetch('/api/stocks?symbols=SPY,QQQ,DIA')
+      .then(r => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setStocks(data);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="bg-[#2B2930] rounded-2xl p-8 h-full flex flex-col">
       {/* Indices */}
       <div className="mb-8 pb-8 border-b-2 border-white/10">
         <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Indices</h3>
-        {['SPY', 'QQQ'].map(sym => {
+        {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
           const stock = stocks.find(s => s.symbol === sym);
-          if (!stock) return null;
-          const isUp = stock.change >= 0;
+          if (!stock || stock.error) return null;
+          const isUp = stock.changePct >= 0;
+          const label = sym === 'SPY' ? 'S&P 500' : sym === 'QQQ' ? 'NASDAQ' : 'DOW';
           return (
             <div key={sym} className="flex items-center justify-between mb-4">
-              <span className="text-3xl font-medium">{sym}</span>
+              <span className="text-3xl font-medium">{label}</span>
               <div className="text-right">
-                <span className="text-3xl font-mono">${stock.price}</span>
+                <span className="text-3xl font-mono">${Number(stock.price).toFixed(2)}</span>
                 <span className={`ml-4 text-2xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                  {isUp ? '↑' : '↓'} {Math.abs(stock.change).toFixed(2)}%
+                  {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(2)}%
                 </span>
               </div>
             </div>
@@ -220,15 +285,15 @@ function MarketColumn() {
       {/* Watchlist */}
       <h3 className="text-2xl font-medium text-white/70 mb-6 uppercase tracking-widest">Watchlist</h3>
       <div className="space-y-4 flex-1">
-        {stocks.filter(s => !['SPY', 'QQQ'].includes(s.symbol)).map((stock) => {
-          const isUp = stock.change >= 0;
+        {stocks.filter(s => !['SPY', 'QQQ', 'DIA'].includes(s.symbol) && !s?.error).map((stock) => {
+          const isUp = stock.changePct >= 0;
           return (
             <div key={stock.symbol} className="flex items-center justify-between">
               <span className="text-2xl font-medium">{stock.symbol}</span>
               <div className="text-right">
-                <span className="text-2xl font-mono">${stock.price}</span>
+                <span className="text-2xl font-mono">${Number(stock.price).toFixed(2)}</span>
                 <span className={`ml-3 text-xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                  {isUp ? '↑' : '↓'} {Math.abs(stock.change).toFixed(2)}%
+                  {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(2)}%
                 </span>
               </div>
             </div>
@@ -239,10 +304,9 @@ function MarketColumn() {
   );
 }
 
-// News Ticker - Rotating headlines
+// News Ticker - Continuous scrolling chyron
 function NewsTicker() {
   const [news, setNews] = useState<string[]>([]);
-  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     fetch('/api/news')
@@ -257,41 +321,22 @@ function NewsTicker() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (news.length <= 1) return;
-    const interval = setInterval(() => {
-      setIndex(i => (i + 1) % news.length);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [news.length]);
-
   if (news.length === 0) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t-2 border-white/10 py-4 px-8 flex items-center h-20">
-        <span className="text-2xl text-white/50">Loading news...</span>
+      <div className="news-ticker bg-[#1C1B1F] border-t-2 border-white/10 h-20 px-8 flex items-center">
+        <span className="text-2xl text-white/50">Loading breaking news…</span>
       </div>
     );
   }
 
+  const text = news.join('  •  ');
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#1C1B1F] border-t-2 border-white/10 py-4 px-8 flex items-center h-20">
-      <motion.div
-        key={index}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.5 }}
-        className="flex-1"
-      >
-        <span className="text-3xl text-white/90">{news[index]}</span>
-      </motion.div>
-      <div className="flex gap-2 ml-8">
-        {news.slice(0, 5).map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
-          />
-        ))}
+    <div className="news-ticker bg-[#1C1B1F] border-t-2 border-white/10 h-20 px-8 flex items-center overflow-hidden ticker">
+      <div className="ticker-track">
+        <span className="ticker-text">{text}</span>
+        <span className="ticker-sep">•</span>
+        <span className="ticker-text">{text}</span>
       </div>
     </div>
   );

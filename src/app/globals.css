@@ -118,6 +118,46 @@ body {
   }
 }
 
+@keyframes ticker-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: ticker-marquee 60s linear infinite;
+  will-change: transform;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-text {
+  font-size: 1.875rem; /* ~text-3xl */
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.ticker-sep {
+  margin: 0 2rem;
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+    transform: translateX(0) !important;
+  }
+}
+
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
