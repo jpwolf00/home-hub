@@ -934,7 +934,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 grid gap-8 p-12 pb-40" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+      <main className="flex-1 grid gap-6 p-6 pb-32" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
