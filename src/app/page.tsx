@@ -60,13 +60,19 @@ function DateDisplay() {
 function HeaderStocksWidget() {
   const [stocks, setStocks] = useState<any[]>([]);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/stocks?symbols=SPY,QQQ,DIA')
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) setStocks(data);
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -94,11 +100,17 @@ function HeaderStocksWidget() {
 function WeatherWidget() {
   const [weather, setWeather] = useState<any>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/weather')
       .then(r => r.json())
       .then(setWeather)
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10 * 60 * 1000); // Refresh every 10 minutes
+    return () => clearInterval(interval);
   }, []);
 
   if (!weather) return <span className="text-2xl text-white/50">Loading...</span>;
@@ -289,11 +301,15 @@ function FrenchColumn() {
     updateParisTime();
     const parisInterval = setInterval(updateParisTime, 1000);
 
-    // Paris weather
-    fetch('/api/paris-weather')
-      .then(r => r.json())
-      .then(setParisWeather)
-      .catch(() => {});
+    // Paris weather - refresh every 10 minutes
+    const fetchParisWeather = () => {
+      fetch('/api/paris-weather')
+        .then(r => r.json())
+        .then(setParisWeather)
+        .catch(() => {});
+    };
+    fetchParisWeather();
+    const parisWeatherInterval = setInterval(fetchParisWeather, 10 * 60 * 1000);
 
     // Update countdown
     const updateCountdown = () => {
@@ -325,6 +341,7 @@ function FrenchColumn() {
 
     return () => {
       clearInterval(parisInterval);
+      clearInterval(parisWeatherInterval);
       clearInterval(countdownInterval);
       clearInterval(phraseInterval);
       clearInterval(conjugationInterval);
@@ -505,11 +522,17 @@ function TopStoriesWidget() {
 function SportsColumn() {
   const [matches, setMatches] = useState<any[]>([]);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/sports')
       .then(r => r.json())
       .then(setMatches)
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
+    return () => clearInterval(interval);
   }, []);
 
   const formatDate = (dateStr: string) => {
@@ -793,7 +816,7 @@ function MarketColumn() {
 function NewsTicker() {
   const [news, setNews] = useState<string[]>([]);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/news')
       .then(r => r.json())
       .then(data => {
@@ -804,6 +827,12 @@ function NewsTicker() {
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
+    return () => clearInterval(interval);
   }, []);
 
   if (news.length === 0) {
@@ -832,7 +861,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   // Fetch from Mac Reminders server via proxy
-  useEffect(() => {
+  const fetchReminders = () => {
     fetch('/api/reminders')
       .then(r => r.json())
       .then(data => {
@@ -849,6 +878,41 @@ export default function Dashboard() {
       })
       .catch((err) => console.error('Failed to fetch reminders:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchReminders();
+    const interval = setInterval(fetchReminders, 5 * 60 * 1000); // Refresh every 5 minutes
+    return () => clearInterval(interval);
+  }, []);
+
+  // Build version checking - poll every 2 minutes and reload on new deployment
+  useEffect(() => {
+    let currentVersion: string | null = null;
+
+    const checkVersion = () => {
+      fetch('/api/version')
+        .then(r => r.json())
+        .then(data => {
+          const newVersion = data.version || data.hash;
+          if (newVersion) {
+            if (currentVersion && currentVersion !== newVersion) {
+              // Version changed - new deployment, reload the page
+              console.log(`Build version changed: ${currentVersion} -> ${newVersion}, reloading...`);
+              window.location.reload();
+            }
+            currentVersion = newVersion;
+          }
+        })
+        .catch(() => {});
+    };
+
+    // Check immediately on mount
+    checkVersion();
+    
+    // Poll every 2 minutes
+    const versionInterval = setInterval(checkVersion, 2 * 60 * 1000);
+    return () => clearInterval(versionInterval);
   }, []);
 
   const listNames = Object.keys(reminderLists);
