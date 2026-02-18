@@ -56,6 +56,40 @@ function DateDisplay() {
   return <span className="text-3xl font-medium">{dateStr}</span>;
 }
 
+// Header stocks widget
+function HeaderStocksWidget() {
+  const [stocks, setStocks] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/stocks?symbols=SPY,QQQ,DIA')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setStocks(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  return (
+    <div className="flex gap-6">
+      {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
+        const stock = stocks.find(s => s.symbol === sym);
+        const label = sym === 'SPY' ? 'S&P' : sym === 'QQQ' ? 'NAS' : 'DOW';
+        if (!stock) return null;
+        const isUp = Number(stock.changePct) >= 0;
+        return (
+          <div key={sym} className="text-right">
+            <div className="text-lg text-white/50">{label}</div>
+            <div className="text-xl font-mono">${Number(stock.price).toFixed(0)}</div>
+            <div className={`text-sm ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+              {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(1)}%
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Weather widget - LARGE
 function WeatherWidget() {
   const [weather, setWeather] = useState<any>(null);
@@ -386,7 +420,7 @@ function FrenchColumn() {
       </div>
 
       {/* French News */}
-      <div className="bg-[#2B2930] rounded-2xl p-6 flex-1 overflow-hidden">
+      <div className="bg-[#2B2930] rounded-2xl p-6 min-h-[400px] overflow-hidden">
         <FrenchNewsWidget />
       </div>
     </div>
@@ -830,11 +864,14 @@ export default function Dashboard() {
           <DateDisplay />
           <Clock />
         </div>
-        <WeatherWidget />
+        <div className="flex items-center gap-12">
+          <HeaderStocksWidget />
+          <WeatherWidget />
+        </div>
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-32">
+      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-40">
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
@@ -866,7 +903,9 @@ export default function Dashboard() {
       </main>
 
       {/* News Ticker */}
-      <NewsTicker />
+      <div className="mb-5">
+        <NewsTicker />
+      </div>
     </div>
   );
 }
