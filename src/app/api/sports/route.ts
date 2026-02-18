@@ -115,43 +115,49 @@ function getLocalSchedule() {
 
   // UK Wildcats Basketball (SEC) - typically Wed/Sat
   const kentuckyGames = [
-    { opponent: 'Georgia', days: 0, time: [21, 0] },    // Today
-    { opponent: 'Auburn', days: 3, time: [21, 0] },       // Sat
-    { opponent: 'Florida', days: 5, time: [19, 0] },   // Mon
+    { opponent: 'Georgia', days: 1, time: [21, 0] },    // Tomorrow (tonight)
+    { opponent: 'Auburn', days: 4, time: [21, 0] },       // Sat
+    { opponent: 'Florida', days: 6, time: [19, 0] },   // Mon
   ]
 
   // Chelsea - Premier League matches
   const chelseaGames = [
-    { opponent: 'Burnley', days: 3, time: [15, 0] },    // Sat
-    { opponent: 'Arsenal', days: 7, time: [11, 30] },   // Wed
+    { opponent: 'Burnley', days: 4, time: [15, 0] },    // Sat
+    { opponent: 'Arsenal', days: 8, time: [11, 30] },   // Wed
   ]
 
   // PSG - Ligue 1
   const psgGames = [
-    { opponent: 'Monaco', days: 1, time: [20, 0] },     // Thu (Champions League)
-    { opponent: 'Lille', days: 4, time: [20, 0] },       // Sun
+    { opponent: 'Monaco', days: 2, time: [20, 0] },     // Thu (Champions League)
+    { opponent: 'Lille', days: 5, time: [20, 0] },       // Sun
   ]
 
   // Wrexham - League One
   const wrexhamGames = [
-    { opponent: 'Bristol City', days: 0, time: [19, 45] }, // Today
-    { opponent: 'Wycombe', days: 4, time: [15, 0] },     // Sun
-    { opponent: 'Oxford', days: 8, time: [15, 0] },       // Thu
+    { opponent: 'Bristol City', days: 1, time: [19, 45] }, // Tomorrow
+    { opponent: 'Wycombe', days: 5, time: [15, 0] },     // Sun
+    { opponent: 'Oxford', days: 9, time: [15, 0] },       // Thu
   ]
 
   const schedule: Match[] = []
   let id = 1
+  const currentTime = new Date()
+
+  // Helper to check if game is in the future
+  const isFuture = (dateStr: string) => new Date(dateStr) > currentTime
 
   // Add Kentucky games
   kentuckyGames.forEach(g => {
+    const date = getDate(g.days, g.time[0], g.time[1])
+    if (!isFuture(date)) return // Skip past games
     schedule.push({
       id: id++,
       homeTeam: 'Kentucky',
       awayTeam: g.opponent,
       homeScore: null,
       awayScore: null,
-      status: g.days === 0 ? 'SCHEDULED' : 'SCHEDULED',
-      date: getDate(g.days, g.time[0], g.time[1]),
+      status: 'SCHEDULED',
+      date,
       league: 'NCAA Basketball',
       isHome: true,
     })
@@ -159,6 +165,8 @@ function getLocalSchedule() {
 
   // Add Chelsea games
   chelseaGames.forEach(g => {
+    const date = getDate(g.days, g.time[0], g.time[1])
+    if (!isFuture(date)) return
     schedule.push({
       id: id++,
       homeTeam: 'Chelsea',
@@ -166,7 +174,7 @@ function getLocalSchedule() {
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: getDate(g.days, g.time[0], g.time[1]),
+      date,
       league: 'Premier League',
       isHome: true,
     })
@@ -174,6 +182,8 @@ function getLocalSchedule() {
 
   // Add PSG games
   psgGames.forEach(g => {
+    const date = getDate(g.days, g.time[0], g.time[1])
+    if (!isFuture(date)) return
     schedule.push({
       id: id++,
       homeTeam: 'PSG',
@@ -181,7 +191,7 @@ function getLocalSchedule() {
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: getDate(g.days, g.time[0], g.time[1]),
+      date,
       league: g.opponent === 'Monaco' ? 'Champions League' : 'Ligue 1',
       isHome: true,
     })
@@ -189,6 +199,8 @@ function getLocalSchedule() {
 
   // Add Wrexham games
   wrexhamGames.forEach(g => {
+    const date = getDate(g.days, g.time[0], g.time[1])
+    if (!isFuture(date)) return
     schedule.push({
       id: id++,
       homeTeam: 'Wrexham',
