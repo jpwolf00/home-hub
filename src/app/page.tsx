@@ -840,7 +840,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 grid grid-cols-3 gap-8 p-12 pb-32">
+      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-32">
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
@@ -863,6 +863,11 @@ export default function Dashboard() {
         {/* Column 3: French */}
         <section>
           <FrenchColumn />
+        </section>
+
+        {/* Column 4: Market */}
+        <section>
+          <MarketColumn />
         </section>
       </main>
 

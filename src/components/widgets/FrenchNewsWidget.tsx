@@ -17,7 +17,7 @@ function FrenchNewsWidget() {
   }, []);
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 h-full">
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full overflow-y-auto">
       <h3 className="text-2xl mb-6 section-title">French News</h3>
       <div className="space-y-4">
         {loading ? (
@@ -25,7 +25,7 @@ function FrenchNewsWidget() {
         ) : news.headlines.length === 0 ? (
           <div className="text-xl text-white/40">No headlines available</div>
         ) : (
-          news.headlines.slice(0, 5).map((headline, i) => (
+          news.headlines.slice(0, 4).map((headline, i) => (
             <div key={i} className="border-b border-white/10 pb-4 last:border-0">
               <span className="text-2xl text-white/80 block leading-snug">
                 {headline}
