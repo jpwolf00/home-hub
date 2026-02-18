@@ -751,12 +751,6 @@ function MarketColumn() {
           );
         })}
       </div>
-
-      {/* French Learning Widget with Countdown */}
-      <FrenchWidget />
-
-      {/* French News - Headlines for learning */}
-      <FrenchNewsWidget />
     </div>
   );
 }
