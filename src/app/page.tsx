@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import FrenchWidget from '@/components/widgets/FrenchWidget';
 import FrenchNewsWidget from '@/components/widgets/FrenchNewsWidget';
@@ -460,7 +460,7 @@ function TopStoriesWidget() {
     };
 
     load();
-    const refresh = setInterval(load, 10 * 60 * 1000); // refresh feed every 10 min
+    const refresh = setInterval(load, 5 * 60 * 1000); // refresh feed every 5 min
     return () => clearInterval(refresh);
   }, []);
 
@@ -859,6 +859,7 @@ function NewsTicker() {
 export default function Dashboard() {
   const [reminderLists, setReminderLists] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
+  const currentVersion = useRef<string | null>(null);
 
   // Fetch from Mac Reminders server via proxy
   const fetchReminders = () => {
@@ -888,20 +889,18 @@ export default function Dashboard() {
 
   // Build version checking - poll every 2 minutes and reload on new deployment
   useEffect(() => {
-    let currentVersion: string | null = null;
-
     const checkVersion = () => {
       fetch('/api/version')
         .then(r => r.json())
         .then(data => {
           const newVersion = data.version || data.hash;
           if (newVersion) {
-            if (currentVersion && currentVersion !== newVersion) {
+            if (currentVersion.current && currentVersion.current !== newVersion) {
               // Version changed - new deployment, reload the page
-              console.log(`Build version changed: ${currentVersion} -> ${newVersion}, reloading...`);
+              console.log(`Build version changed: ${currentVersion.current} -> ${newVersion}, reloading...`);
               window.location.reload();
             }
-            currentVersion = newVersion;
+            currentVersion.current = newVersion;
           }
         })
         .catch(() => {});
