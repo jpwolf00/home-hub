@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const RSS_URL = 'https://www.1jour1actu.com/feed';
+const RSS_URL = 'https://www.lemonde.fr/rss/une.xml';
 
 async function fetchWithHeaders(url: string) {
   const res = await fetch(url, {
@@ -50,7 +50,7 @@ export async function GET() {
     
     return NextResponse.json({ 
       headlines,
-      source: '1jour1actu.com (Kids News)'
+      source: 'Le Monde'
     });
   } catch (err) {
     console.error('French news fetch error:', err);
