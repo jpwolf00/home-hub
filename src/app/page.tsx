@@ -170,7 +170,7 @@ function FrenchColumn() {
     { french: "L'hôpital", pronunciation: 'loh-pee-TAHL', english: 'Hospital' },
     { french: 'La pharmacie', pronunciation: 'lah far-mah-SEE', english: 'Pharmacy' },
     { french: "Comment vous appelez-vous?", pronunciation: 'koh-MAHN voo zah-puh-LAY voo', english: 'What is your name?' },
-    { french: 'Je m'appelle...', pronunciation: 'zhuh mah-PEL', english: 'My name is...' },
+    { french: "Je m'appelle...", pronunciation: "zhuh mah-PEL", english: "My name is..." },
     { french: "Enchanté(e)", pronunciation: 'ahn-shahn-TAY', english: 'Nice to meet you' },
     { french: 'Comment allez-vous?', pronunciation: 'koh-MAHN tah-LAY voo', english: 'How are you?' },
     { french: "Très bien, merci", pronunciation: 'treh BYAN mair-SEE', english: 'Very well, thank you' },
