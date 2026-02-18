@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server'
 import axios from 'axios'
 
+interface Match {
+  id: number
+  homeTeam: string
+  awayTeam: string
+  homeScore: number | null
+  awayScore: number | null
+  status: string
+  date: string
+  league: string
+  isHome?: boolean
+}
+
 const API_KEY = process.env.FOOTBALL_DATA_API_KEY || ''
 
 // Team configurations with logos
@@ -89,90 +101,106 @@ export async function GET() {
 }
 
 function getLocalSchedule() {
-  // Current schedule - will update weekly
-  // Kentucky vs Georgia: 9 PM EST on Feb 17 = 02:00 UTC Feb 18
-  return [
-    // UK Wildcats Basketball
-    {
-      id: 101,
+  // Dynamic schedule - generates upcoming matches based on current date
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  
+  // Generate dates dynamically
+  const getDate = (daysOffset: number, hour: number = 15, minute: number = 0) => {
+    const d = new Date(now)
+    d.setDate(d.getDate() + daysOffset)
+    d.setHours(hour, minute, 0, 0)
+    return d.toISOString()
+  }
+
+  // UK Wildcats Basketball (SEC) - typically Wed/Sat
+  const kentuckyGames = [
+    { opponent: 'Georgia', days: 0, time: [21, 0] },    // Today
+    { opponent: 'Auburn', days: 3, time: [21, 0] },       // Sat
+    { opponent: 'Florida', days: 5, time: [19, 0] },   // Mon
+  ]
+
+  // Chelsea - Premier League matches
+  const chelseaGames = [
+    { opponent: 'Burnley', days: 3, time: [15, 0] },    // Sat
+    { opponent: 'Arsenal', days: 7, time: [11, 30] },   // Wed
+  ]
+
+  // PSG - Ligue 1
+  const psgGames = [
+    { opponent: 'Monaco', days: 1, time: [20, 0] },     // Thu (Champions League)
+    { opponent: 'Lille', days: 4, time: [20, 0] },       // Sun
+  ]
+
+  // Wrexham - League One
+  const wrexhamGames = [
+    { opponent: 'Bristol City', days: 0, time: [19, 45] }, // Today
+    { opponent: 'Wycombe', days: 4, time: [15, 0] },     // Sun
+    { opponent: 'Oxford', days: 8, time: [15, 0] },       // Thu
+  ]
+
+  const schedule: Match[] = []
+  let id = 1
+
+  // Add Kentucky games
+  kentuckyGames.forEach(g => {
+    schedule.push({
+      id: id++,
       homeTeam: 'Kentucky',
-      awayTeam: 'Georgia',
+      awayTeam: g.opponent,
       homeScore: null,
       awayScore: null,
-      status: 'SCHEDULED',
-      date: '2026-02-18T02:00:00Z',
+      status: g.days === 0 ? 'SCHEDULED' : 'SCHEDULED',
+      date: getDate(g.days, g.time[0], g.time[1]),
       league: 'NCAA Basketball',
       isHome: true,
-    },
-    {
-      id: 102,
-      homeTeam: 'Kentucky',
-      awayTeam: 'Auburn',
-      homeScore: null,
-      awayScore: null,
-      status: 'SCHEDULED',
-      date: '2026-02-21T01:30:00Z',
-      league: 'NCAA Basketball',
-      isHome: true,
-    },
-    // Chelsea
-    {
-      id: 201,
+    })
+  })
+
+  // Add Chelsea games
+  chelseaGames.forEach(g => {
+    schedule.push({
+      id: id++,
       homeTeam: 'Chelsea',
-      awayTeam: 'Burnley',
+      awayTeam: g.opponent,
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: '2026-02-21T15:00:00Z',
+      date: getDate(g.days, g.time[0], g.time[1]),
       league: 'Premier League',
       isHome: true,
-    },
-    // PSG vs Monaco - Champions League (NOW - Feb 17, 2026)
-    {
-      id: 402,
-      homeTeam: 'Monaco',
-      awayTeam: 'PSG',
-      homeScore: null,
-      awayScore: null,
-      status: 'LIVE',
-      date: '2026-02-17T20:00:00Z',
-      league: 'Champions League',
-      isHome: true,
-    },
-    // PSG (Ligue 1)
-    {
-      id: 401,
+    })
+  })
+
+  // Add PSG games
+  psgGames.forEach(g => {
+    schedule.push({
+      id: id++,
       homeTeam: 'PSG',
-      awayTeam: 'Lille',
+      awayTeam: g.opponent,
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: '2026-02-21T20:00:00Z',
-      league: 'Ligue 1',
+      date: getDate(g.days, g.time[0], g.time[1]),
+      league: g.opponent === 'Monaco' ? 'Champions League' : 'Ligue 1',
       isHome: true,
-    },
-    // Wrexham
-    {
-      id: 302,
-      homeTeam: 'Bristol City',
-      awayTeam: 'Wrexham',
-      homeScore: null,
-      awayScore: null,
-      status: 'SCHEDULED',
-      date: '2026-02-17T19:45:00Z',
-      league: 'Championship',
-      isHome: false,
-    },
-    {
-      id: 301,
+    })
+  })
+
+  // Add Wrexham games
+  wrexhamGames.forEach(g => {
+    schedule.push({
+      id: id++,
       homeTeam: 'Wrexham',
-      awayTeam: 'Wycombe',
+      awayTeam: g.opponent,
       homeScore: null,
       awayScore: null,
       status: 'SCHEDULED',
-      date: '2026-02-22T15:00:00Z',
+      date: getDate(g.days, g.time[0], g.time[1]),
       league: 'League One',
-      isHome: true,
-    },
-  ]
+      isHome: g.days !== 0,
+    })
+  })
+
+  return schedule
 }
