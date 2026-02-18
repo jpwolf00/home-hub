@@ -112,6 +112,287 @@ function WeatherWidget() {
   );
 }
 
+// French Column - Full column with all French learning content
+function FrenchColumn() {
+  const [parisTime, setParisTime] = useState('');
+  const [parisWeather, setParisWeather] = useState<any>(null);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [conjugationIndex, setConjugationIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  // Paris countdown
+  const PARIS_TRIP = new Date('2026-05-09T00:00:00-04:00');
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  // Extended French phrases with pronunciation
+  const FRENCH_PHRASES = [
+    { french: 'Bonjour', pronunciation: 'bon-ZHOOR', english: 'Hello' },
+    { french: 'Merci beaucoup', pronunciation: 'mair-SEE boh-KOO', english: 'Thank you very much' },
+    { french: "S'il vous plaît", pronunciation: 'seel voo PLEH', english: 'Please' },
+    { french: 'Excusez-moi', pronunciation: 'ex-koo-ZAY mwah', english: 'Excuse me' },
+    { french: "Je ne comprends pas", pronunciation: 'zhuh nuh kohm-PRAHN pah', english: "I don't understand" },
+    { french: 'Parlez-vous anglais?', pronunciation: 'par-LAY voo on-GLEH', english: 'Do you speak English?' },
+    { french: 'Où est...?', pronunciation: 'oo EH', english: 'Where is...?' },
+    { french: 'À gauche', pronunciation: 'ah GOHSH', english: 'To the left' },
+    { french: 'À droite', pronunciation: 'ah DRWAHT', english: 'To the right' },
+    { french: 'Tout droit', pronunciation: 'too DRWAH', english: 'Straight ahead' },
+    { french: "C'est loin?", pronunciation: 'seh LWAN', english: 'Is it far?' },
+    { french: "L'adresse, s'il vous plaît", pronunciation: 'lah-DRESS seel voo PLEH', english: 'The address, please' },
+    { french: 'Le métro', pronunciation: 'luh may-TROH', english: 'The subway' },
+    { french: 'La gare', pronunciation: 'lah GAHR', english: 'The train station' },
+    { french: "L'aéroport", pronunciation: 'lah-ay-roh-POR', english: 'The airport' },
+    { french: 'Un billet, s’il vous plaît', pronunciation: 'un bee-YEH seel voo PLEH', english: 'A ticket, please' },
+    { french: "C'est quelle heure?", pronunciation: 'seh kel UHR', english: 'What time is it?' },
+    { french: 'Le train pour...', pronunciation: 'luh TRAN poor', english: 'The train to...' },
+    { french: 'La valise', pronunciation: 'lah vah-LEEZ', english: 'Suitcase' },
+    { french: 'Le passeport', pronunciation: 'luh pahs-POR', english: 'Passport' },
+    { french: 'Une chambre', pronunciation: 'oon SHAHM-bruh', english: 'A room' },
+    { french: "L'hôtel", pronunciation: 'loh-TEL', english: 'Hotel' },
+    { french: 'La clé', pronunciation: 'lah klay', english: 'The key' },
+    { french: "L'ascenseur", pronunciation: 'lah-sahn-SUHR', english: 'Elevator' },
+    { french: "L'escalier", pronunciation: 'les-kah-LYAY', english: 'Stairs' },
+    { french: 'Le petit déjeuner', pronunciation: 'luh puh-TEE day-zhuh-NAY', english: 'Breakfast' },
+    { french: 'Le dîner', pronunciation: 'luh dee-NAY', english: 'Dinner' },
+    { french: "L'addition, s'il vous plaît", pronunciation: 'lah-dee-SYON seel voo PLEH', english: 'The bill, please' },
+    { french: "C'est délicieux!", pronunciation: 'seh day-lee-SYUH', english: "It's delicious!" },
+    { french: "L'eau, s'il vous plaît", pronunciation: 'loh seel voo PLEH', english: 'Water, please' },
+    { french: 'Le café', pronunciation: 'luh kah-FAY', english: 'Coffee' },
+    { french: 'Le vin', pronunciation: 'luh VAN', english: 'Wine' },
+    { french: 'La bière', pronunciation: 'lah BYEHR', english: 'Beer' },
+    { french: "C'est combien?", pronunciation: 'seh kohm-BYAN', english: 'How much is it?' },
+    { french: 'Trop cher', pronunciation: 'troh SHEHR', english: 'Too expensive' },
+    { french: "J'achète", pronunciation: 'zhah-SHET', english: 'I buy / I take it' },
+    { french: 'La taille', pronunciation: 'lah TAHY', english: 'Size' },
+    { french: 'La couleur', pronunciation: 'lah koo-LUHR', english: 'Color' },
+    { french: "J'ai besoin d'aide", pronunciation: 'zhay buh-ZWAN DED', english: 'I need help' },
+    { french: "Appelez la police!", pronunciation: 'ah-puh-LAY lah poh-LEES', english: 'Call the police!' },
+    { french: "Appelez un médecin!", pronunciation: 'ah-puh-LAY un mayd-SAN', english: 'Call a doctor!' },
+    { french: "L'hôpital", pronunciation: 'loh-pee-TAHL', english: 'Hospital' },
+    { french: 'La pharmacie', pronunciation: 'lah far-mah-SEE', english: 'Pharmacy' },
+    { french: "Comment vous appelez-vous?", pronunciation: 'koh-MAHN voo zah-puh-LAY voo', english: 'What is your name?' },
+    { french: 'Je m'appelle...', pronunciation: 'zhuh mah-PEL', english: 'My name is...' },
+    { french: "Enchanté(e)", pronunciation: 'ahn-shahn-TAY', english: 'Nice to meet you' },
+    { french: 'Comment allez-vous?', pronunciation: 'koh-MAHN tah-LAY voo', english: 'How are you?' },
+    { french: "Très bien, merci", pronunciation: 'treh BYAN mair-SEE', english: 'Very well, thank you' },
+    { french: 'Je suis américain/américaine', pronunciation: 'zhuh swee ah-may-ree-KAN', english: "I'm American" },
+    { french: "D'où venez-vous?", pronunciation: 'duh vuh-NAY voo', english: 'Where are you from?' },
+    { french: 'Je viens de...', pronunciation: 'zhuh VYAN duh', english: 'I am from...' },
+    // More advanced
+    { french: 'Je voudrais...', pronunciation: 'zhuh voo-DREH', english: 'I would like...' },
+    { french: 'Est-ce que je peux...?', pronunciation: 'ess kuh zhuh PUH', english: 'Can I...?' },
+    { french: "Je ne sais pas", pronunciation: 'zhuh nuh SAY pah', english: "I don't know" },
+    { french: 'Bien sûr', pronunciation: 'BYAN SOOR', english: 'Of course' },
+    { french: 'Peut-être', pronunciation: 'puh-TET-ruh', english: 'Maybe' },
+    { french: "Je suis désolé(e)", pronunciation: 'zhuh swee day-zoh-LAY', english: "I'm sorry" },
+    { french: 'Pardon', pronunciation: 'par-DON', english: 'Sorry' },
+    { french: 'Au revoir', pronunciation: 'oh ruh-VWAHR', english: 'Goodbye' },
+    { french: 'Bonne nuit', pronunciation: 'bun NWEE', english: 'Good night' },
+    { french: 'À bientôt', pronunciation: 'ah byan-TOO', english: 'See you soon' },
+    { french: 'Salut', pronunciation: 'sah-LOO', english: 'Hi / Bye (informal)' },
+    { french: 'Monsieur', pronunciation: 'muh-SYUH', english: 'Mr. / Sir' },
+    { french: 'Madame', pronunciation: 'mah-DAHM', english: 'Mrs. / Ma\'am' },
+    { french: 'Mademoiselle', pronunciation: 'mahdm-WAH-ZEL', english: 'Miss' },
+    { french: "C'est quoi...?", pronunciation: 'seh KWAH', english: "What's...?" },
+    { french: "Qu'est-ce que c'est?", pronunciation: 'kes kuh SEH', english: 'What is that?' },
+    { french: 'Pourquoi?', pronunciation: 'poor-KWAH', english: 'Why?' },
+    { french: 'Parce que...', pronunciation: 'pars kuh', english: 'Because...' },
+    { french: 'OUI', pronunciation: 'WEE', english: 'Yes' },
+    { french: 'NON', pronunciation: 'NOH', english: 'No' },
+    { french: 'Peut-être', pronunciation: 'puh-TET-ruh', english: 'Maybe' },
+    { french: 'Je ne comprends rien', pronunciation: 'zhuh nuh kohm-PRAHN RYAN', english: "I don't understand anything" },
+    { french: "Parlez plus lentement", pronunciation: 'par-LAY ploo lahnt-MAHN', english: 'Speak more slowly' },
+    { french: "Pouvez-vous répéter?", pronunciation: 'poo-VAY voo ray-pay-TAY', english: 'Can you repeat?' },
+    { french: "Je voudrais payer", pronunciation: 'zhuh voo-DREH pay-YAY', english: 'I would like to pay' },
+    { french: 'Acceptez-vous carte?', pronunciation: 'ahk-sep-TAY voo KART', english: 'Do you accept card?' },
+    { french: 'Acceptez-vous espèces?', pronunciation: 'ahk-sep-TAY voo ess-PSS', english: 'Do you accept cash?' },
+    { french: "Où est la salle de bain?", pronunciation: 'oo EH lah SAL duh BAN', english: 'Where is the bathroom?' },
+    { french: 'Les toilettes, s\'il vous plaît', pronunciation: 'lay twah-LET seel voo PLEH', english: 'The toilet, please' },
+    { french: "C'est ouvert", pronunciation: 'seh oo-VEHR', english: "It's open" },
+    { french: "C'est fermé", pronunciation: 'seh fehr-MAY', english: "It's closed" },
+    { french: 'Je suis perdu(e)', pronunciation: 'zhuh swee pehr-DOO', english: "I'm lost" },
+    { french: "Aidez-moi!", pronunciation: 'eh-day MWAH', english: 'Help me!' },
+    { french: "Au secours!", pronunciation: 'oh suh-KOOR', english: 'Help! (emergency)' },
+    // Numbers
+    { french: 'Un, deux, trois', pronunciation: 'UN, DUH, TRWAH', english: 'One, two, three' },
+    { french: 'Quatre, cinq, six', pronunciation: 'KAH-truh, SANK, SEES', english: 'Four, five, six' },
+    { french: 'Sept, huit, neuf', pronunciation: 'SET, WEET, NUF', english: 'Seven, eight, nine' },
+    { french: 'Dix, vingt, cent', pronunciation: 'DEE, VAN, SAHN', english: 'Ten, twenty, hundred' },
+  ];
+
+  // Verb conjugations
+  const VERB_CONJUGATIONS = [
+    { verb: 'être (to be)', present: 'je suis, tu es, il/elle est, nous sommes, vous êtes, ils/elles sont', english: 'to be' },
+    { verb: 'avoir (to have)', present: 'j\'ai, tu as, il/elle a, nous avons, vous avez, ils/elles ont', english: 'to have' },
+    { verb: 'aller (to go)', present: 'je vais, tu vas, il/elle va, nous allons, vous allez, ils/elles vont', english: 'to go' },
+    { verb: 'faire (to do/make)', present: 'je fais, tu fais, il/elle fait, nous faisons, vous faites, ils/elles font', english: 'to do / to make' },
+    { verb: 'venir (to come)', present: 'je viens, tu viens, il/elle vient, nous venons, vous venez, ils/elles viennent', english: 'to come' },
+    { verb: 'voir (to see)', present: 'je vois, tu vois, il/elle voit, nous voyons, vous voyez, ils/elles voient', english: 'to see' },
+    { verb: 'savoir (to know)', present: 'je sais, tu sais, il/elle sait, nous savons, vous savez, ils/elles savent', english: 'to know (facts)' },
+    { verb: 'connaître (to know)', present: 'je connais, tu connais, il/elle connaît, nous connaissons, vous connaissez, ils/elles connaissent', english: 'to know (people)' },
+    { verb: 'vouloir (to want)', present: 'je veux, tu veux, il/elle veut, nous voulons, vous voulez, ils/elles veulent', english: 'to want' },
+    { verb: 'pouvoir (to can/may)', present: 'je peux, tu peux, il/elle peut, nous pouvons, vous pouvez, ils/elles peuvent', english: 'to be able to' },
+    { verb: 'devoir (must/have to)', present: 'je dois, tu dois, il/elle doit, nous devons, vous devez, ils/elles doivent', english: 'must / to have to' },
+    { verb: 'dire (to say/tell)', present: 'je dis, tu dis, il/elle dit, nous disons, vous dites, ils/elles disent', english: 'to say / to tell' },
+    { verb: 'parler (to speak)', present: 'je parle, tu parles, il/elle parle, nous parlons, vous parlez, ils/elles parlent', english: 'to speak' },
+    { verb: 'manger (to eat)', present: 'je mange, tu manges, il/elle mange, nous mangeons, vous mangez, ils/elles mangent', english: 'to eat' },
+    { verb: 'boire (to drink)', present: 'je bois, tu bois, il/elle boit, nous buvons, vous buvez, ils/elles boivent', english: 'to drink' },
+    { verb: 'prendre (to take)', present: 'je prends, tu prends, il/elle prend, nous prenons, vous prenez, ils/elles prennent', english: 'to take' },
+    { verb: 'venir (to come)', present: 'je viens, tu viens, il/elle vient, nous venons, vous venez, ils/elles viennent', english: 'to come' },
+    { verb: 'partir (to leave)', present: 'je pars, tu pars, il/elle part, nous partons, vous partez, ils/elles partir', english: 'to leave / to depart' },
+    { verb: 'arriver (to arrive)', present: "j'arrive, tu arrives, il/elle arrive, nous arrivons, vous arrivez, ils/elles arrivent", english: 'to arrive' },
+    { verb: 'rester (to stay)', present: 'je reste, tu reste, il/elle reste, nous restons, vous restez, ils/elles restent', english: 'to stay / to remain' },
+  ];
+
+  useEffect(() => {
+    setMounted(true);
+    
+    // Paris time
+    const updateParisTime = () => {
+      const now = new Date();
+      const parisTime = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
+      setParisTime(parisTime);
+    };
+    updateParisTime();
+    const parisInterval = setInterval(updateParisTime, 1000);
+
+    // Paris weather
+    fetch('/api/paris-weather')
+      .then(r => r.json())
+      .then(setParisWeather)
+      .catch(() => {});
+
+    // Update countdown
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = PARIS_TRIP.getTime() - now.getTime();
+      if (diff > 0) {
+        setCountdown({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        });
+      }
+    };
+    updateCountdown();
+    const countdownInterval = setInterval(updateCountdown, 60000);
+
+    // Rotate phrases every 60 seconds
+    const phraseInterval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % FRENCH_PHRASES.length);
+    }, 60000);
+
+    // Rotate conjugations every hour (check minute to sync)
+    const conjugationInterval = setInterval(() => {
+      const now = new Date();
+      if (now.getMinutes() === 0) {
+        setConjugationIndex((prev) => (prev + 1) % VERB_CONJUGATIONS.length);
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(parisInterval);
+      clearInterval(countdownInterval);
+      clearInterval(phraseInterval);
+      clearInterval(conjugationInterval);
+    };
+  }, []);
+
+  const iconMap: Record<string, string> = {
+    '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
+    '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
+    '09d': '🌧️', '09n': '🌧️', '10d': '🌧️', '10n': '🌧️',
+    '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️',
+    '50d': '🌫️', '50n': '🌫️',
+  };
+
+  const currentPhrase = FRENCH_PHRASES[phraseIndex];
+  const currentVerb = VERB_CONJUGATIONS[conjugationIndex];
+
+  return (
+    <div className="flex flex-col gap-8 h-full">
+      {/* Paris Trip Countdown */}
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">✈️</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
+        </div>
+        {mounted ? (
+          <div className="flex gap-8">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white">{countdown.days}</div>
+              <div className="text-lg text-white/50">Days</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white">{countdown.hours}</div>
+              <div className="text-lg text-white/50">Hours</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white">{countdown.minutes}</div>
+              <div className="text-lg text-white/50">Minutes</div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-2xl text-white/40">Loading...</div>
+        )}
+      </div>
+
+      {/* Paris Time & Weather */}
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">🗼</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris</h3>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="text-4xl font-mono text-white">{parisTime || 'Loading...'}</div>
+          {parisWeather && (
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{iconMap[parisWeather.icon] || '🌡️'}</span>
+              <div className="text-right">
+                <div className="text-2xl text-white">{parisWeather.temp}°F</div>
+                <div className="text-sm text-white/60">{parisWeather.description}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* French Phrase with Pronunciation */}
+      <div className="bg-[#2B2930] rounded-2xl p-6 flex-1">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">🇫🇷</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">French</h3>
+        </div>
+        <div className="space-y-3">
+          <div className="text-5xl font-medium text-white">{currentPhrase.french}</div>
+          <div className="text-2xl text-primary-300 italic">{currentPhrase.pronunciation}</div>
+          <div className="text-xl text-white/60">{currentPhrase.english}</div>
+          <div className="text-sm text-white/30 mt-2">
+            {phraseIndex + 1} / {FRENCH_PHRASES.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Verb Conjugation */}
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">📝</span>
+          <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Verb Conjugation</h3>
+        </div>
+        <div className="space-y-2">
+          <div className="text-2xl font-medium text-white">{currentVerb.verb}</div>
+          <div className="text-lg text-primary-300">{currentVerb.present}</div>
+          <div className="text-md text-white/60">{currentVerb.english}</div>
+        </div>
+      </div>
+
+      {/* French News */}
+      <div className="bg-[#2B2930] rounded-2xl p-6 flex-1 overflow-hidden">
+        <FrenchNewsWidget />
+      </div>
+    </div>
+  );
+}
+
 // Top Stories (Tech/Security/AI) - iOS-style cards
 function TopStoriesWidget() {
   const [stories, setStories] = useState<any[]>([]);
@@ -558,51 +839,30 @@ export default function Dashboard() {
         <WeatherWidget />
       </header>
 
-      {/* Main Grid - 4 Columns */}
-      <main className="flex-1 grid grid-cols-4 gap-8 p-12 pb-32">
-        {/* Column 1: Sports */}
+      {/* Main Grid - 3 Columns */}
+      <main className="flex-1 grid grid-cols-3 gap-8 p-12 pb-32">
+        {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
         </section>
 
-        {/* Reminder Lists - always show 2 columns */}
-        {listNames.length >= 2 ? (
-          listNames.slice(0, 2).map((listName, idx) => (
-            <section key={listName}>
+        {/* Column 2: Combined Tasks */}
+        <section>
+          <div className="flex flex-col gap-8 h-full">
+            {listNames.slice(0, 2).map((listName, idx) => (
               <TasksColumn
+                key={listName}
                 title={listName}
                 tasks={reminderLists[listName] || []}
                 accentColor={idx === 0 ? COLORS.work : COLORS.personal}
               />
-            </section>
-          ))
-        ) : listNames.length === 1 ? (
-          <>
-            <section>
-              <TasksColumn
-                title={listNames[0]}
-                tasks={reminderLists[listNames[0]] || []}
-                accentColor={COLORS.work}
-              />
-            </section>
-            <section>
-              <TasksColumn title="Reminders" tasks={[]} accentColor={COLORS.personal} />
-            </section>
-          </>
-        ) : (
-          <>
-            <section>
-              <TasksColumn title={loading ? "Loading..." : "Reminders"} tasks={[]} accentColor={COLORS.work} />
-            </section>
-            <section>
-              <TasksColumn title={loading ? "Loading..." : "Reminders"} tasks={[]} accentColor={COLORS.personal} />
-            </section>
-          </>
-        )}
+            ))}
+          </div>
+        </section>
 
-        {/* Column 4: Market */}
+        {/* Column 3: French */}
         <section>
-          <MarketColumn />
+          <FrenchColumn />
         </section>
       </main>
 
