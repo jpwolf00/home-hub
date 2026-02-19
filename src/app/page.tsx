@@ -134,10 +134,10 @@ function WeatherWidget() {
           <div className="text-lg text-white/40">{weather.city}</div>
         </div>
       </div>
-      
+
       {/* Vertical separator */}
       <div className="h-20 w-px bg-white/20 mx-4"></div>
-      
+
       {/* 7-day forecast */}
       {weather.forecast && weather.forecast.length > 0 && (
         <div className="flex gap-8">
@@ -291,7 +291,7 @@ function FrenchColumn() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Paris time
     const updateParisTime = () => {
       const now = new Date();
@@ -360,7 +360,7 @@ function FrenchColumn() {
   const currentVerb = VERB_CONJUGATIONS[conjugationIndex];
 
   return (
-    <div className="flex flex-col gap-8 h-full">
+    <div className="flex flex-col gap-8 h-full min-h-0">
       {/* Paris Trip Countdown */}
       <div className="bg-[#2B2930] rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
@@ -459,8 +459,8 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
     return () => clearInterval(refresh);
   }, []);
 
-  const itemCount = expanded ? 10 : 4;
-  
+  const itemCount = expanded ? 6 : 4;
+
   useEffect(() => {
     if (stories.length <= itemCount) return;
     const interval = setInterval(() => {
@@ -481,8 +481,8 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
 
   return (
     <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 min-h-0 overflow-hidden">
-      <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
-      <div className="space-y-6">
+      <h3 className={`text-2xl ${expanded ? 'mb-3' : 'mb-6'} section-title`}>Top Stories</h3>
+      <div className={expanded ? 'space-y-3' : 'space-y-6'}>
         {visible.map((s: any) => (
           <div key={s.id || s.link} className="flex gap-6">
             <div className="w-28 h-20 rounded-xl bg-black/20 overflow-hidden flex-shrink-0">
@@ -499,7 +499,7 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
                 <span className="text-sm text-white/40 truncate">{s.source}</span>
               </div>
               <div
-                className="text-2xl leading-tight text-white/90"
+                className={`${expanded ? 'text-xl' : 'text-2xl'} leading-tight text-white/90`}
                 style={{ display: '-webkit-box', WebkitLineClamp: 2 as any, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}
               >
                 {s.title}
@@ -701,10 +701,10 @@ function SportsColumn() {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col h-full gap-6">
+    <div className="flex flex-col h-full min-h-0 gap-6">
       {/* Upcoming Games - 50% height */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full bg-[#2B2930] rounded-2xl p-6">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full min-h-0 bg-[#2B2930] rounded-2xl p-6">
           <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>
           <div className="space-y-4">
             {upcomingGames.map((m: any) => {
@@ -741,8 +741,8 @@ function SportsColumn() {
       </div>
 
       {/* Latest Scores - 50% height */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full bg-[#2B2930] rounded-2xl p-6">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full min-h-0 bg-[#2B2930] rounded-2xl p-6">
           <LatestScoresWidget />
         </div>
       </div>
@@ -860,17 +860,17 @@ function HomeNetworkWidget() {
 // News Column - Top Stories (expanded) + French News
 function NewsColumn() {
   return (
-    <div className="flex flex-col h-full gap-6">
+    <div className="flex flex-col h-full min-h-0 gap-6">
       {/* Top Stories - 50% height */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full min-h-0">
           <TopStoriesWidget expanded />
         </div>
       </div>
-      
+
       {/* French News - 50% height */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full min-h-0">
           <FrenchNewsWidget />
         </div>
       </div>
@@ -974,7 +974,7 @@ export default function Dashboard() {
 
     // Check immediately on mount
     checkVersion();
-    
+
     // Poll every 2 minutes
     const versionInterval = setInterval(checkVersion, 2 * 60 * 1000);
     return () => clearInterval(versionInterval);
@@ -1002,13 +1002,13 @@ export default function Dashboard() {
       {/* Main Grid - 4 Columns */}
       <main className="flex-1 overflow-hidden grid gap-6 p-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {/* Column 1: Sports + Latest Scores */}
-        <section>
+        <section className="h-full min-h-0">
           <SportsColumn />
         </section>
 
         {/* Column 2: Combined Tasks */}
-        <section>
-          <div className="flex flex-col gap-8 h-full">
+        <section className="h-full min-h-0">
+          <div className="flex flex-col gap-8 h-full min-h-0">
             {listNames.slice(0, 2).map((listName, idx) => (
               <TasksColumn
                 key={listName}
@@ -1021,12 +1021,12 @@ export default function Dashboard() {
         </section>
 
         {/* Column 3: French */}
-        <section>
+        <section className="h-full min-h-0">
           <FrenchColumn />
         </section>
 
         {/* Column 4: News - Top Stories + French News */}
-        <section>
+        <section className="h-full min-h-0">
           <NewsColumn />
         </section>
       </main>
