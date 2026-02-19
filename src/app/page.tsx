@@ -31,7 +31,7 @@ function Clock() {
   const displayHours = hours % 12 || 12;
 
   return (
-    <span className="font-mono text-5xl tracking-tight font-medium">
+    <span className="font-mono text-8xl tracking-tight font-medium">
       {displayHours}:{String(minutes).padStart(2, '0')} {ampm}
     </span>
   );
@@ -53,7 +53,7 @@ function DateDisplay() {
     year: 'numeric',
   });
 
-  return <span className="text-xl font-medium">{dateStr}</span>;
+  return <span className="text-3xl font-medium">{dateStr}</span>;
 }
 
 // Header stocks widget
@@ -85,7 +85,7 @@ function HeaderStocksWidget() {
         return (
           <div key={sym} className="text-right">
             <div className="text-lg text-white/50">{label}</div>
-            <div key={sym} className="text-base font-mono">${Number(stock.price).toFixed(0)}</div>
+            <div className="text-xl font-mono">${Number(stock.price).toFixed(0)}</div>
             <div className={`text-sm ${isUp ? 'text-green-400' : 'text-red-400'}`}>
               {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(1)}%
             </div>
@@ -113,7 +113,7 @@ function WeatherWidget() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!weather) return <span className="text-base text-white/50">Loading...</span>;
+  if (!weather) return <span className="text-2xl text-white/50">Loading...</span>;
 
   const iconMap: Record<string, string> = {
     '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
@@ -124,28 +124,28 @@ function WeatherWidget() {
   };
 
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-8">
       {/* Current conditions */}
-      <div className="flex items-center gap-4">
-        <span className="text-5xl">{iconMap[weather.icon] || '🌡️'}</span>
+      <div className="flex items-center gap-6">
+        <span className="text-7xl">{iconMap[weather.icon] || '🌡️'}</span>
         <div>
-          <div className="text-3xl font-medium">{weather.temp}°F</div>
-          <div className="text-base text-white/60">{weather.description}</div>
-          <div className="text-sm text-white/40">{weather.city}</div>
+          <div className="text-5xl font-medium">{weather.temp}°F</div>
+          <div className="text-2xl text-white/60">{weather.description}</div>
+          <div className="text-lg text-white/40">{weather.city}</div>
         </div>
       </div>
       
       {/* Vertical separator */}
-      <div className="h-12 w-px bg-white/20 mx-2"></div>
+      <div className="h-20 w-px bg-white/20 mx-4"></div>
       
       {/* 7-day forecast */}
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="flex gap-4">
+        <div className="flex gap-8">
           {weather.forecast.slice(0, 7).map((day: any, i: number) => (
-            <div key={i} className="flex flex-col items-center gap-1 min-w-[50px]">
-              <div className="text-sm text-white/50">{day.day}</div>
-              <div className="text-2xl">{iconMap[day.icon] || '🌡️'}</div>
-              <div className="text-sm text-white">
+            <div key={i} className="flex flex-col items-center gap-2 min-w-[70px]">
+              <div className="text-lg text-white/50">{day.day}</div>
+              <div className="text-3xl">{iconMap[day.icon] || '🌡️'}</div>
+              <div className="text-xl text-white">
                 <span className="text-white/60">{day.low}°</span>
                 <span className="mx-1">/</span>
                 <span>{day.high}°</span>
@@ -362,45 +362,45 @@ function FrenchColumn() {
   return (
     <div className="flex flex-col gap-8 h-full">
       {/* Paris Trip Countdown */}
-      <div className="bg-[#2B2930] rounded-2xl p-3">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-xl">✈️</span>
-          <h3 className="text-base font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">✈️</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
         </div>
         {mounted ? (
-          <div className="flex gap-6">
+          <div className="flex gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">{countdown.days}</div>
-              <div className="text-sm text-white/50">Days</div>
+              <div className="text-5xl font-bold text-white">{countdown.days}</div>
+              <div className="text-lg text-white/50">Days</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">{countdown.hours}</div>
-              <div className="text-sm text-white/50">Hours</div>
+              <div className="text-5xl font-bold text-white">{countdown.hours}</div>
+              <div className="text-lg text-white/50">Hours</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">{countdown.minutes}</div>
-              <div className="text-sm text-white/50">Minutes</div>
+              <div className="text-5xl font-bold text-white">{countdown.minutes}</div>
+              <div className="text-lg text-white/50">Minutes</div>
             </div>
           </div>
         ) : (
-          <div className="text-base text-white/40">Loading...</div>
+          <div className="text-2xl text-white/40">Loading...</div>
         )}
       </div>
 
       {/* Paris Time & Weather */}
-      <div className="bg-[#2B2930] rounded-2xl p-3">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-xl">🗼</span>
-          <h3 className="text-base font-medium text-white/70 uppercase tracking-wider">Paris</h3>
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">🗼</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris</h3>
         </div>
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-mono text-white">{parisTime || 'Loading...'}</div>
+          <div className="text-4xl font-mono text-white">{parisTime || 'Loading...'}</div>
           {parisWeather && (
-            <div className="flex items-center gap-2">
-              <span className="text-3xl">{iconMap[parisWeather.icon] || '🌡️'}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{iconMap[parisWeather.icon] || '🌡️'}</span>
               <div className="text-right">
-                <div className="text-base text-white">{parisWeather.temp}°F</div>
-                <div className="text-xs text-white/60">{parisWeather.description}</div>
+                <div className="text-2xl text-white">{parisWeather.temp}°F</div>
+                <div className="text-sm text-white/60">{parisWeather.description}</div>
               </div>
             </div>
           )}
@@ -408,36 +408,36 @@ function FrenchColumn() {
       </div>
 
       {/* French Phrase with Pronunciation */}
-      <div className="bg-[#2B2930] rounded-2xl p-3 flex-1">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-xl">🇫🇷</span>
-          <h3 className="text-base font-medium text-white/70 uppercase tracking-wider">French</h3>
+      <div className="bg-[#2B2930] rounded-2xl p-6 flex-1">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">🇫🇷</span>
+          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">French</h3>
         </div>
-        <div className="space-y-2">
-          <div className="text-3xl font-medium text-white">{currentPhrase.french}</div>
-          <div className="text-base text-primary-300 italic">{currentPhrase.pronunciation}</div>
-          <div className="text-sm text-white/60">{currentPhrase.english}</div>
-          <div className="text-xs text-white/30 mt-1">
+        <div className="space-y-3">
+          <div className="text-5xl font-medium text-white">{currentPhrase.french}</div>
+          <div className="text-2xl text-primary-300 italic">{currentPhrase.pronunciation}</div>
+          <div className="text-xl text-white/60">{currentPhrase.english}</div>
+          <div className="text-sm text-white/30 mt-2">
             {phraseIndex + 1} / {FRENCH_PHRASES.length}
           </div>
         </div>
       </div>
 
       {/* Verb Conjugation */}
-      <div className="bg-[#2B2930] rounded-2xl p-3">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-base">📝</span>
-          <h3 className="text-base font-medium text-white/70 uppercase tracking-wider">Verb Conjugation</h3>
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">📝</span>
+          <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Verb Conjugation</h3>
         </div>
-        <div className="space-y-1">
-          <div className="text-base font-medium text-white">{currentVerb.verb}</div>
-          <div className="text-sm text-primary-300">{currentVerb.present}</div>
-          <div className="text-xs text-white/60">{currentVerb.english}</div>
+        <div className="space-y-2">
+          <div className="text-2xl font-medium text-white">{currentVerb.verb}</div>
+          <div className="text-lg text-primary-300">{currentVerb.present}</div>
+          <div className="text-md text-white/60">{currentVerb.english}</div>
         </div>
       </div>
 
       {/* French News */}
-      <div className="bg-[#2B2930] rounded-2xl p-3 min-h-[300px] overflow-hidden">
+      <div className="bg-[#2B2930] rounded-2xl p-6 min-h-[400px] overflow-hidden">
         <FrenchNewsWidget />
       </div>
     </div>
@@ -483,9 +483,9 @@ function TopStoriesWidget() {
   };
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-4 flex-1 overflow-hidden">
-      <h3 className="text-lg mb-3 section-title">Top Stories</h3>
-      <div className="space-y-4">
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 overflow-hidden">
+      <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
+      <div className="space-y-6">
         {visible.map((s: any) => (
           <div key={s.id || s.link} className="flex gap-6">
             <div className="w-28 h-20 rounded-xl bg-black/20 overflow-hidden flex-shrink-0">
@@ -502,7 +502,7 @@ function TopStoriesWidget() {
                 <span className="text-sm text-white/40 truncate">{s.source}</span>
               </div>
               <div
-                className="text-base leading-tight text-white/90"
+                className="text-2xl leading-tight text-white/90"
                 style={{ display: '-webkit-box', WebkitLineClamp: 2 as any, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}
               >
                 {s.title}
@@ -511,7 +511,7 @@ function TopStoriesWidget() {
           </div>
         ))}
         {visible.length === 0 && (
-          <div className="text-base text-white/40">Loading stories…</div>
+          <div className="text-2xl text-white/40">Loading stories…</div>
         )}
       </div>
     </div>
@@ -618,29 +618,29 @@ function SportsColumn() {
 
   return (
     <div className="flex flex-col gap-8 h-full">
-      <div className="bg-[#2B2930] rounded-2xl p-4 flex-1">
-        <h3 className="text-lg mb-3 section-title">Upcoming Games</h3>
-        <div className="space-y-4">
+      <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
+        <h3 className="text-2xl mb-6 section-title">Upcoming Games</h3>
+        <div className="space-y-6">
           {upcomingGames.map((m: any) => {
             const homeLogo = getLogo(m.homeTeam);
             const awayLogo = getLogo(m.awayTeam);
             return (
-            <div key={m.id} className="bg-white/5 rounded-lg p-2">
-              <div className="flex items-center justify-center gap-4 text-sm text-white/50 mb-1">
+            <div key={m.id} className="bg-white/5 rounded-lg p-3">
+              <div className="flex items-center justify-center gap-4 text-xl text-white/50 mb-2">
                 <span>{formatDate(m.date)}</span>
                 <span>•</span>
                 <span>{formatTime(m.date)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-6 h-6 object-contain" />}
-                  <span className="text-base font-medium">{m.homeTeam}</span>
+                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-8 h-8 object-contain" />}
+                  <span className="text-2xl font-medium">{m.homeTeam}</span>
                   {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
-                <span className="text-sm text-white/50">vs</span>
+                <span className="text-xl text-white/50">vs</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-base font-medium">{m.awayTeam}</span>
-                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-6 h-6 object-contain" />}
+                  <span className="text-2xl font-medium">{m.awayTeam}</span>
+                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-8 h-8 object-contain" />}
                   {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
@@ -648,7 +648,7 @@ function SportsColumn() {
             );
           })}
           {upcomingGames.length === 0 && (
-            <div className="text-base text-white/40">No upcoming games</div>
+            <div className="text-2xl text-white/40">No upcoming games</div>
           )}
         </div>
       </div>
@@ -661,26 +661,26 @@ function SportsColumn() {
 // Tasks Column - LARGE
 function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[], accentColor: string }) {
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-4 h-full">
-      <h3 className="text-lg font-medium mb-3 uppercase tracking-wider flex items-center gap-3">
-        <span style={{ color: accentColor, fontSize: '1.5rem' }}>●</span>
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full">
+      <h3 className="text-3xl font-medium mb-8 uppercase tracking-wider flex items-center gap-4">
+        <span style={{ color: accentColor, fontSize: '2rem' }}>●</span>
         {title}
       </h3>
-      <div className="space-y-3">
+      <div className="space-y-6">
         {tasks.map((task: any) => (
-          <label key={task.id} className="flex items-start gap-3 cursor-pointer group">
+          <label key={task.id} className="flex items-start gap-6 cursor-pointer group">
             <input
               type="checkbox"
               defaultChecked={task.completed}
-              className="mt-1 w-5 h-5 rounded border-4 border-white/30 bg-transparent accent-current"
+              className="mt-2 w-8 h-8 rounded border-4 border-white/30 bg-transparent accent-current"
               style={{ color: accentColor }}
             />
-            <span className={`text-base group-hover:text-white transition-colors ${task.completed ? 'line-through opacity-40' : ''}`}>
+            <span className={`text-2xl group-hover:text-white transition-colors ${task.completed ? 'line-through opacity-40' : ''}`}>
               {task.title}
             </span>
           </label>
         ))}
-        {tasks.length === 0 && <div className="text-base text-white/30">No tasks</div>}
+        {tasks.length === 0 && <div className="text-2xl text-white/30">No tasks</div>}
       </div>
     </div>
   );
@@ -712,20 +712,20 @@ function HomeNetworkWidget() {
 
   return (
     <div className="mt-2 flex-1">
-      <h3 className="text-base mb-3 section-title flex items-center justify-between">
+      <h3 className="text-2xl mb-6 section-title flex items-center justify-between">
         <span>Home Network</span>
-        {isStale && <span className="text-xs text-amber-300/90 tracking-wider">STALE</span>}
+        {isStale && <span className="text-sm text-amber-300/90 tracking-wider">STALE</span>}
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-5">
         {servers.slice(0, 6).map((s: any) => {
           const online = s.status === 'online';
           return (
-            <div key={s.id} className="card-inset p-3">
-              <div className="flex items-center justify-between mb-2">
+            <div key={s.id} className="card-inset p-5">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className={`w-2 h-2 rounded-full ${online ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span className="text-base font-medium truncate">{s.name}</span>
+                  <span className={`w-3 h-3 rounded-full ${online ? 'bg-green-400' : 'bg-red-400'}`} />
+                  <span className="text-2xl font-medium truncate">{s.name}</span>
                 </div>
                 <span className={`text-sm uppercase tracking-wider ${online ? 'text-green-200/90' : 'text-red-200/90'}`}>{online ? 'Online' : 'Offline'}</span>
               </div>
@@ -758,7 +758,7 @@ function HomeNetworkWidget() {
         })}
 
         {servers.length === 0 && (
-          <div className="text-base text-white/40">Loading servers…</div>
+          <div className="text-2xl text-white/40">Loading servers…</div>
         )}
       </div>
     </div>
@@ -786,21 +786,21 @@ function MarketColumn() {
   }, []);
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-4 h-full flex flex-col">
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full flex flex-col">
       {/* Indices */}
-      <div className="mb-4 pb-4 border-b-2" style={{ borderColor: 'var(--outline)' }}>
-        <h3 className="text-lg mb-3 section-title">Indices</h3>
+      <div className="mb-8 pb-8 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+        <h3 className="text-2xl mb-6 section-title">Indices</h3>
         {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
           const stock = stocks.find(s => s.symbol === sym);
           if (!stock || stock.error) return null;
           const isUp = stock.changePct >= 0;
           const label = sym === 'SPY' ? 'S&P 500' : sym === 'QQQ' ? 'NASDAQ' : 'DOW';
           return (
-            <div key={sym} className="flex items-center justify-between mb-2">
-              <span className="text-lg font-medium">{label}</span>
+            <div key={sym} className="flex items-center justify-between mb-4">
+              <span className="text-3xl font-medium">{label}</span>
               <div className="text-right">
-                <span className="text-lg font-mono">${Number(stock.price).toFixed(2)}</span>
-                <span className={`ml-2 text-base ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+                <span className="text-3xl font-mono">${Number(stock.price).toFixed(2)}</span>
+                <span className={`ml-4 text-2xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
                   {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(2)}%
                 </span>
               </div>
@@ -837,8 +837,8 @@ function NewsTicker() {
 
   if (news.length === 0) {
     return (
-      <div className="news-ticker border-t-2 h-12 px-8 flex items-center" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
-        <span className="text-base text-white/50">Loading breaking news…</span>
+      <div className="news-ticker border-t-2 h-20 px-8 flex items-center" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
+        <span className="text-2xl text-white/50">Loading breaking news…</span>
       </div>
     );
   }
@@ -846,7 +846,7 @@ function NewsTicker() {
   const text = news.join('  •  ');
 
   return (
-    <div className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-12 px-8 flex items-center overflow-hidden ticker">
+    <div className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-20 px-8 flex items-center overflow-hidden ticker">
       <div className="ticker-track">
         <span className="ticker-text">{text}</span>
         <span className="ticker-sep">•</span>
@@ -922,7 +922,7 @@ export default function Dashboard() {
       style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
       {/* Header - LARGE */}
-      <header className="flex items-center justify-between px-12 py-4 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+      <header className="flex items-center justify-between px-12 py-8 border-b-2" style={{ borderColor: 'var(--outline)' }}>
         <div className="flex items-baseline gap-12">
           <DateDisplay />
           <Clock />
@@ -934,7 +934,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 grid gap-3 p-3 pb-6" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <main className="flex-1 grid gap-8 p-12 pb-40" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
@@ -966,7 +966,7 @@ export default function Dashboard() {
       </main>
 
       {/* News Ticker */}
-      <div className="mb-2">
+      <div className="mb-5">
         <NewsTicker />
       </div>
     </div>
