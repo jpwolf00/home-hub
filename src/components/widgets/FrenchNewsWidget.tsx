@@ -17,17 +17,17 @@ function FrenchNewsWidget() {
   }, []);
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-6 h-full max-h-[400px] overflow-hidden">
-      <h3 className="text-2xl mb-6 section-title">French News</h3>
-      <div className="space-y-4">
+    <div className="bg-[#2B2930] rounded-2xl p-6 h-full">
+      <h3 className="text-2xl mb-4 section-title">French News</h3>
+      <div className="space-y-4 max-h-[320px] overflow-hidden">
         {loading ? (
           <div className="text-xl text-white/40">Loading...</div>
         ) : news.headlines.length === 0 ? (
           <div className="text-xl text-white/40">No headlines available</div>
         ) : (
-          news.headlines.slice(0, 4).map((headline, i) => (
-            <div key={i} className="border-b border-white/10 pb-4 last:border-0">
-              <span className="text-2xl text-white/80 block leading-snug">
+          news.headlines.slice(0, 8).map((headline, i) => (
+            <div key={i} className="border-b border-white/10 pb-3 last:border-0">
+              <span className="text-lg text-white/80 block leading-snug">
                 {headline}
               </span>
             </div>

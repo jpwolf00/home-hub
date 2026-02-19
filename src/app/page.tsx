@@ -435,17 +435,12 @@ function FrenchColumn() {
           <div className="text-md text-white/60">{currentVerb.english}</div>
         </div>
       </div>
-
-      {/* French News */}
-      <div className="bg-[#2B2930] rounded-2xl p-6 h-full max-h-[450px] overflow-hidden">
-        <FrenchNewsWidget />
-      </div>
     </div>
   );
 }
 
-// Top Stories (Tech/Security/AI) - iOS-style cards
-function TopStoriesWidget() {
+// Top Stories (Tech/Security/AI) - iOS-style cards - EXPANDED for News Column
+function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
   const [stories, setStories] = useState<any[]>([]);
   const [start, setStart] = useState(0);
 
@@ -464,17 +459,19 @@ function TopStoriesWidget() {
     return () => clearInterval(refresh);
   }, []);
 
+  const itemCount = expanded ? 10 : 4;
+  
   useEffect(() => {
-    if (stories.length <= 4) return;
+    if (stories.length <= itemCount) return;
     const interval = setInterval(() => {
       setStart((s) => (s + 1) % stories.length);
     }, 45_000); // rotate every 45 seconds
     return () => clearInterval(interval);
-  }, [stories.length]);
+  }, [stories.length, itemCount]);
 
-  const visible = stories.length <= 4
+  const visible = stories.length <= itemCount
     ? stories
-    : Array.from({ length: 4 }).map((_, idx) => stories[(start + idx) % stories.length]);
+    : Array.from({ length: itemCount }).map((_, idx) => stories[(start + idx) % stories.length]);
 
   const tagColor = (cat: string) => {
     if (cat === 'security') return 'bg-red-500/20 text-red-200 border-red-500/30';
@@ -483,7 +480,7 @@ function TopStoriesWidget() {
   };
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 max-h-[650px] overflow-hidden">
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 max-h-[700px] overflow-hidden">
       <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
       <div className="space-y-6">
         {visible.map((s: any) => (
@@ -512,6 +509,67 @@ function TopStoriesWidget() {
         ))}
         {visible.length === 0 && (
           <div className="text-2xl text-white/40">Loading stories…</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Latest Scores Widget - Shows FINISHED games with scores
+function LatestScoresWidget() {
+  const [matches, setMatches] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/sports')
+      .then(r => r.json())
+      .then((data) => {
+        // Filter for FINISHED games, sort by most recent
+        const finished = data
+          .filter((m: any) => m.status === 'FINISHED')
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, 5);
+        setMatches(finished);
+      })
+      .catch(() => {});
+  }, []);
+
+  const getRelativeDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
+  };
+
+  return (
+    <div className="bg-[#2B2930] rounded-2xl p-6 h-full max-h-[450px] overflow-hidden">
+      <h3 className="text-2xl mb-4 section-title">Latest Scores</h3>
+      <div className="space-y-4">
+        {matches.length > 0 ? (
+          matches.map((m: any) => (
+            <div key={m.id} className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-white/50">{m.league}</span>
+                <span className="text-sm text-white/40">{getRelativeDate(m.date)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-medium">{m.homeTeam}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-bold text-green-400">{m.homeScore}</span>
+                  <span className="text-xl text-white/50">-</span>
+                  <span className="text-2xl font-bold text-green-400">{m.awayScore}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-medium">{m.awayTeam}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-xl text-white/40">No recent scores</div>
         )}
       </div>
     </div>
@@ -617,30 +675,31 @@ function SportsColumn() {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-8 h-full">
-      <div className="bg-[#2B2930] rounded-2xl p-8 flex-1">
-        <h3 className="text-2xl mb-6 section-title">Upcoming Games</h3>
-        <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
+      {/* Upcoming Games */}
+      <div className="bg-[#2B2930] rounded-2xl p-6 max-h-[380px] overflow-hidden">
+        <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>
+        <div className="space-y-4">
           {upcomingGames.map((m: any) => {
             const homeLogo = getLogo(m.homeTeam);
             const awayLogo = getLogo(m.awayTeam);
             return (
             <div key={m.id} className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center justify-center gap-4 text-xl text-white/50 mb-2">
+              <div className="flex items-center justify-center gap-4 text-lg text-white/50 mb-2">
                 <span>{formatDate(m.date)}</span>
                 <span>•</span>
                 <span>{formatTime(m.date)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-8 h-8 object-contain" />}
-                  <span className="text-2xl font-medium">{m.homeTeam}</span>
+                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-6 h-6 object-contain" />}
+                  <span className="text-lg font-medium">{m.homeTeam}</span>
                   {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                 </div>
-                <span className="text-xl text-white/50">vs</span>
+                <span className="text-lg text-white/50">vs</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-medium">{m.awayTeam}</span>
-                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-8 h-8 object-contain" />}
+                  <span className="text-lg font-medium">{m.awayTeam}</span>
+                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-6 h-6 object-contain" />}
                   {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                 </div>
               </div>
@@ -648,12 +707,13 @@ function SportsColumn() {
             );
           })}
           {upcomingGames.length === 0 && (
-            <div className="text-2xl text-white/40">No upcoming games</div>
+            <div className="text-xl text-white/40">No upcoming games</div>
           )}
         </div>
       </div>
 
-      <TopStoriesWidget />
+      {/* Latest Scores - NEW */}
+      <LatestScoresWidget />
     </div>
   );
 }
@@ -765,48 +825,18 @@ function HomeNetworkWidget() {
   );
 }
 
-// Market Watch Column - LARGE
-function MarketColumn() {
-  const [stocks, setStocks] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchStocks = () => {
-      fetch('/api/stocks?symbols=SPY,QQQ,DIA')
-        .then(r => r.json())
-        .then((data) => {
-          if (Array.isArray(data)) setStocks(data);
-        })
-        .catch(() => {});
-    };
-    
-    // Fetch immediately and then every 5 minutes
-    fetchStocks();
-    const interval = setInterval(fetchStocks, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+// News Column - Top Stories (expanded) + French News
+function NewsColumn() {
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 h-full flex flex-col">
-      {/* Indices */}
-      <div className="mb-8 pb-8 border-b-2" style={{ borderColor: 'var(--outline)' }}>
-        <h3 className="text-2xl mb-6 section-title">Indices</h3>
-        {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
-          const stock = stocks.find(s => s.symbol === sym);
-          if (!stock || stock.error) return null;
-          const isUp = stock.changePct >= 0;
-          const label = sym === 'SPY' ? 'S&P 500' : sym === 'QQQ' ? 'NASDAQ' : 'DOW';
-          return (
-            <div key={sym} className="flex items-center justify-between mb-4">
-              <span className="text-3xl font-medium">{label}</span>
-              <div className="text-right">
-                <span className="text-3xl font-mono">${Number(stock.price).toFixed(2)}</span>
-                <span className={`ml-4 text-2xl ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                  {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
+    <div className="flex flex-col gap-6 h-full">
+      {/* Top Stories - Expanded to 10 items */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <TopStoriesWidget expanded />
+      </div>
+      
+      {/* French News - Moved from French column */}
+      <div className="max-h-[400px] overflow-hidden">
+        <FrenchNewsWidget />
       </div>
     </div>
   );
@@ -933,9 +963,9 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Grid - 3 Columns */}
+      {/* Main Grid - 4 Columns */}
       <main className="flex-1 overflow-hidden grid gap-6 p-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        {/* Column 1: Sports + Stories */}
+        {/* Column 1: Sports + Latest Scores */}
         <section>
           <SportsColumn />
         </section>
@@ -959,9 +989,9 @@ export default function Dashboard() {
           <FrenchColumn />
         </section>
 
-        {/* Column 4: Market */}
+        {/* Column 4: News - Top Stories + French News */}
         <section>
-          <MarketColumn />
+          <NewsColumn />
         </section>
       </main>
 

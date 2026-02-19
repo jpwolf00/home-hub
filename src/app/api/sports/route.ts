@@ -102,6 +102,7 @@ export async function GET() {
 
 function getLocalSchedule() {
   // Dynamic schedule - generates upcoming matches based on current date
+  // Also includes FINISHED games for Latest Scores widget testing
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   
@@ -109,6 +110,14 @@ function getLocalSchedule() {
   const getDate = (daysOffset: number, hour: number = 15, minute: number = 0) => {
     const d = new Date(now)
     d.setDate(d.getDate() + daysOffset)
+    d.setHours(hour, minute, 0, 0)
+    return d.toISOString()
+  }
+
+  // Get past date for FINISHED games
+  const getPastDate = (daysAgo: number, hour: number = 15, minute: number = 0) => {
+    const d = new Date(now)
+    d.setDate(d.getDate() - daysAgo)
     d.setHours(hour, minute, 0, 0)
     return d.toISOString()
   }
@@ -211,6 +220,28 @@ function getLocalSchedule() {
       date: getDate(g.days, g.time[0], g.time[1]),
       league: 'League One',
       isHome: g.days !== 0,
+    })
+  })
+
+  // Add FINISHED games for Latest Scores testing
+  const finishedGames = [
+    { home: 'Chelsea', away: 'Liverpool', homeScore: 2, awayScore: 1, daysAgo: 1, time: [15, 0], league: 'Premier League' },
+    { home: 'PSG', away: 'Monaco', homeScore: 3, awayScore: 0, daysAgo: 1, time: [20, 0], league: 'Champions League' },
+    { home: 'Kentucky', away: 'Tennessee', homeScore: 78, awayScore: 65, daysAgo: 2, time: [19, 0], league: 'NCAA Basketball' },
+    { home: 'Wrexham', away: 'Bristol City', homeScore: 1, awayScore: 1, daysAgo: 3, time: [15, 0], league: 'League One' },
+    { home: 'Arsenal', away: 'Newcastle', homeScore: 2, awayScore: 0, daysAgo: 4, time: [16, 0], league: 'Premier League' },
+  ]
+
+  finishedGames.forEach(g => {
+    schedule.push({
+      id: id++,
+      homeTeam: g.home,
+      awayTeam: g.away,
+      homeScore: g.homeScore,
+      awayScore: g.awayScore,
+      status: 'FINISHED',
+      date: getPastDate(g.daysAgo, g.time[0], g.time[1]),
+      league: g.league,
     })
   })
 
