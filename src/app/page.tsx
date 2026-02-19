@@ -480,7 +480,7 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
   };
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 max-h-[700px] overflow-hidden">
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 min-h-0 overflow-hidden">
       <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
       <div className="space-y-6">
         {visible.map((s: any) => (
@@ -701,7 +701,7 @@ function SportsColumn() {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full gap-6">
       {/* Upcoming Games - 50% height */}
       <div className="flex-1 overflow-hidden bg-[#2B2930] rounded-2xl p-6">
         <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>

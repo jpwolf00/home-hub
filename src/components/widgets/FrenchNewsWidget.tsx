@@ -17,9 +17,9 @@ function FrenchNewsWidget() {
   }, []);
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-6 h-full">
+    <div className="bg-[#2B2930] rounded-2xl p-6 h-full flex flex-col">
       <h3 className="text-2xl mb-4 section-title">French News</h3>
-      <div className="space-y-4 max-h-[320px] overflow-hidden">
+      <div className="space-y-4 flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-xl text-white/40">Loading...</div>
         ) : news.headlines.length === 0 ? (
