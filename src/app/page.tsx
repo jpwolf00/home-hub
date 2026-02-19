@@ -437,7 +437,7 @@ function FrenchColumn() {
       </div>
 
       {/* French News */}
-      <div className="bg-[#2B2930] rounded-2xl p-6 min-h-[400px] overflow-hidden">
+      <div className="bg-[#2B2930] rounded-2xl p-6 h-full max-h-[450px] overflow-hidden">
         <FrenchNewsWidget />
       </div>
     </div>
@@ -483,7 +483,7 @@ function TopStoriesWidget() {
   };
 
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 overflow-hidden">
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 max-h-[650px] overflow-hidden">
       <h3 className="text-2xl mb-6 section-title">Top Stories</h3>
       <div className="space-y-6">
         {visible.map((s: any) => (
@@ -661,13 +661,13 @@ function SportsColumn() {
 // Tasks Column - LARGE
 function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[], accentColor: string }) {
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 h-full">
-      <h3 className="text-3xl font-medium mb-8 uppercase tracking-wider flex items-center gap-4">
+    <div className="bg-[#2B2930] rounded-2xl p-8 h-full max-h-[850px] overflow-hidden">
+      <h3 className="text-3xl font-medium mb-4 uppercase tracking-wider flex items-center gap-4">
         <span style={{ color: accentColor, fontSize: '2rem' }}>●</span>
         {title}
       </h3>
-      <div className="space-y-6">
-        {tasks.map((task: any) => (
+      <div className="space-y-3 overflow-hidden">
+        {tasks.slice(0, 8).map((task: any) => (
           <label key={task.id} className="flex items-start gap-6 cursor-pointer group">
             <input
               type="checkbox"
@@ -934,7 +934,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 overflow-auto grid gap-6 p-8 pb-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <main className="flex-1 overflow-hidden grid gap-6 p-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
