@@ -703,44 +703,48 @@ function SportsColumn() {
   return (
     <div className="flex flex-col h-full gap-6">
       {/* Upcoming Games - 50% height */}
-      <div className="flex-1 overflow-hidden bg-[#2B2930] rounded-2xl p-6">
-        <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>
-        <div className="space-y-4">
-          {upcomingGames.map((m: any) => {
-            const homeLogo = getLogo(m.homeTeam);
-            const awayLogo = getLogo(m.awayTeam);
-            return (
-            <div key={m.id} className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center justify-center gap-4 text-lg text-white/50 mb-2">
-                <span>{formatDate(m.date)}</span>
-                <span>•</span>
-                <span>{formatTime(m.date)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-6 h-6 object-contain" />}
-                  <span className="text-lg font-medium">{m.homeTeam}</span>
-                  {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full bg-[#2B2930] rounded-2xl p-6">
+          <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>
+          <div className="space-y-4">
+            {upcomingGames.map((m: any) => {
+              const homeLogo = getLogo(m.homeTeam);
+              const awayLogo = getLogo(m.awayTeam);
+              return (
+              <div key={m.id} className="bg-white/5 rounded-lg p-3">
+                <div className="flex items-center justify-center gap-4 text-lg text-white/50 mb-2">
+                  <span>{formatDate(m.date)}</span>
+                  <span>•</span>
+                  <span>{formatTime(m.date)}</span>
                 </div>
-                <span className="text-lg text-white/50">vs</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-medium">{m.awayTeam}</span>
-                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-6 h-6 object-contain" />}
-                  {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-6 h-6 object-contain" />}
+                    <span className="text-lg font-medium">{m.homeTeam}</span>
+                    {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
+                  </div>
+                  <span className="text-lg text-white/50">vs</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-medium">{m.awayTeam}</span>
+                    {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-6 h-6 object-contain" />}
+                    {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-            );
-          })}
-          {upcomingGames.length === 0 && (
-            <div className="text-xl text-white/40">No upcoming games</div>
-          )}
+              );
+            })}
+            {upcomingGames.length === 0 && (
+              <div className="text-xl text-white/40">No upcoming games</div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Latest Scores - 50% height */}
       <div className="flex-1 overflow-hidden">
-        <LatestScoresWidget />
+        <div className="h-full bg-[#2B2930] rounded-2xl p-6">
+          <LatestScoresWidget />
+        </div>
       </div>
     </div>
   );
@@ -856,15 +860,19 @@ function HomeNetworkWidget() {
 // News Column - Top Stories (expanded) + French News
 function NewsColumn() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full gap-6">
       {/* Top Stories - 50% height */}
       <div className="flex-1 overflow-hidden">
-        <TopStoriesWidget expanded />
+        <div className="h-full">
+          <TopStoriesWidget expanded />
+        </div>
       </div>
       
       {/* French News - 50% height */}
       <div className="flex-1 overflow-hidden">
-        <FrenchNewsWidget />
+        <div className="h-full">
+          <FrenchNewsWidget />
+        </div>
       </div>
     </div>
   );
