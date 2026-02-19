@@ -918,11 +918,11 @@ export default function Dashboard() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-screen flex flex-col overflow-hidden"
       style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
       {/* Header - LARGE */}
-      <header className="flex items-center justify-between px-8 py-6 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+      <header className="flex-none flex items-center justify-between px-8 py-6 border-b-2" style={{ borderColor: 'var(--outline)' }}>
         <div className="flex items-baseline gap-12">
           <DateDisplay />
           <Clock />
@@ -934,7 +934,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid - 3 Columns */}
-      <main className="flex-1 grid gap-6 p-8 pb-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <main className="flex-1 overflow-auto grid gap-6 p-8 pb-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {/* Column 1: Sports + Stories */}
         <section>
           <SportsColumn />
@@ -966,9 +966,7 @@ export default function Dashboard() {
       </main>
 
       {/* News Ticker */}
-      <div className="mb-5">
-        <NewsTicker />
-      </div>
+      <NewsTicker />
     </div>
   );
 }
