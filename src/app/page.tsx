@@ -542,32 +542,58 @@ function LatestScoresWidget() {
     return `${diffDays} days ago`;
   };
 
+  // Team logo paths - reuse from SportsColumn
+  const TEAM_LOGOS: Record<string, string> = {
+    'Kentucky': '/logos/sec/kentucky.png', 'Georgia': '/logos/sec/georgia.png', 'Auburn': '/logos/sec/auburn.png',
+    'Chelsea': '/logos/premier-league/chelsea.png', 'Burnley': '/logos/premier-league/burnley.png',
+    'Arsenal': '/logos/premier-league/arsenal.png', 'Liverpool': '/logos/premier-league/liverpool.png',
+    'Manchester City': '/logos/premier-league/manchester-city.png', 'Manchester United': '/logos/premier-league/manchester-united.png',
+    'Newcastle': '/logos/premier-league/newcastle-united.png', 'Tottenham': '/logos/premier-league/tottenham-hotspur.png',
+    'PSG': '/logos/ligue-1/psg.png', 'Lille': '/logos/ligue-1/lille.png', 'Monaco': '/logos/ligue-1/monaco.png',
+    'Wrexham': '/logos/english-leagues/wrexham.png', 'Wycombe': '/logos/english-leagues/wycombe.png',
+    'Bristol City': '/logos/english-leagues/bristol-city.png', 'Tennessee': '/logos/sec/tennessee.png',
+    'Florida': '/logos/sec/florida.png',
+  };
+
+  const getLogo = (team: string) => TEAM_LOGOS[team] || '';
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-6 h-full max-h-[450px] overflow-hidden">
+    <div className="bg-[#2B2930] rounded-2xl p-6 h-full overflow-hidden flex flex-col">
       <h3 className="text-2xl mb-4 section-title">Latest Scores</h3>
-      <div className="space-y-4">
+      <div className="space-y-3 overflow-y-auto flex-1">
         {matches.length > 0 ? (
-          matches.map((m: any) => (
-            <div key={m.id} className="bg-white/5 rounded-lg p-4">
+          matches.map((m: any) => {
+            const homeLogo = getLogo(m.homeTeam);
+            const awayLogo = getLogo(m.awayTeam);
+            return (
+            <div key={m.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-white/50">{m.league}</span>
-                <span className="text-sm text-white/40">{getRelativeDate(m.date)}</span>
+                <span className="text-sm text-white/40">{formatDate(m.date)} • {getRelativeDate(m.date)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-medium">{m.homeTeam}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl font-bold text-green-400">{m.homeScore}</span>
-                  <span className="text-xl text-white/50">-</span>
-                  <span className="text-2xl font-bold text-green-400">{m.awayScore}</span>
+                  {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-5 h-5 object-contain" />}
+                  <span className="text-lg font-medium">{m.homeTeam}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-medium">{m.awayTeam}</span>
+                  <span className="text-xl font-bold text-green-400">{m.homeScore}</span>
+                  <span className="text-lg text-white/50">-</span>
+                  <span className="text-xl font-bold text-green-400">{m.awayScore}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-medium">{m.awayTeam}</span>
+                  {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-5 h-5 object-contain" />}
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <div className="text-xl text-white/40">No recent scores</div>
         )}
@@ -675,9 +701,9 @@ function SportsColumn() {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      {/* Upcoming Games */}
-      <div className="bg-[#2B2930] rounded-2xl p-6 max-h-[380px] overflow-hidden">
+    <div className="flex flex-col h-full">
+      {/* Upcoming Games - 50% height */}
+      <div className="flex-1 overflow-hidden bg-[#2B2930] rounded-2xl p-6">
         <h3 className="text-2xl mb-4 section-title">Upcoming Games</h3>
         <div className="space-y-4">
           {upcomingGames.map((m: any) => {
@@ -712,8 +738,10 @@ function SportsColumn() {
         </div>
       </div>
 
-      {/* Latest Scores - NEW */}
-      <LatestScoresWidget />
+      {/* Latest Scores - 50% height */}
+      <div className="flex-1 overflow-hidden">
+        <LatestScoresWidget />
+      </div>
     </div>
   );
 }
@@ -828,14 +856,14 @@ function HomeNetworkWidget() {
 // News Column - Top Stories (expanded) + French News
 function NewsColumn() {
   return (
-    <div className="flex flex-col gap-6 h-full">
-      {/* Top Stories - Expanded to 10 items */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+    <div className="flex flex-col h-full">
+      {/* Top Stories - 50% height */}
+      <div className="flex-1 overflow-hidden">
         <TopStoriesWidget expanded />
       </div>
       
-      {/* French News - Moved from French column */}
-      <div className="max-h-[400px] overflow-hidden">
+      {/* French News - 50% height */}
+      <div className="flex-1 overflow-hidden">
         <FrenchNewsWidget />
       </div>
     </div>

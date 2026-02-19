@@ -225,11 +225,13 @@ function getLocalSchedule() {
 
   // Add FINISHED games for Latest Scores testing
   const finishedGames = [
-    { home: 'Chelsea', away: 'Liverpool', homeScore: 2, awayScore: 1, daysAgo: 1, time: [15, 0], league: 'Premier League' },
-    { home: 'PSG', away: 'Monaco', homeScore: 3, awayScore: 0, daysAgo: 1, time: [20, 0], league: 'Champions League' },
-    { home: 'Kentucky', away: 'Tennessee', homeScore: 78, awayScore: 65, daysAgo: 2, time: [19, 0], league: 'NCAA Basketball' },
-    { home: 'Wrexham', away: 'Bristol City', homeScore: 1, awayScore: 1, daysAgo: 3, time: [15, 0], league: 'League One' },
-    { home: 'Arsenal', away: 'Newcastle', homeScore: 2, awayScore: 0, daysAgo: 4, time: [16, 0], league: 'Premier League' },
+    { home: 'Chelsea', away: 'Liverpool', homeScore: 2, awayScore: 1, daysAgo: 0, time: [15, 0], league: 'Premier League' },
+    { home: 'PSG', away: 'Monaco', homeScore: 3, awayScore: 0, daysAgo: 0, time: [20, 0], league: 'Champions League' },
+    { home: 'Kentucky', away: 'Tennessee', homeScore: 78, awayScore: 65, daysAgo: 1, time: [19, 0], league: 'NCAA Basketball' },
+    { home: 'Wrexham', away: 'Bristol City', homeScore: 1, awayScore: 1, daysAgo: 1, time: [15, 0], league: 'League One' },
+    { home: 'Arsenal', away: 'Newcastle', homeScore: 2, awayScore: 0, daysAgo: 2, time: [16, 0], league: 'Premier League' },
+    { home: 'Manchester City', away: 'Tottenham', homeScore: 4, awayScore: 2, daysAgo: 2, time: [12, 30], league: 'Premier League' },
+    { home: 'Leeds', away: 'Sunderland', homeScore: 2, awayScore: 0, daysAgo: 3, time: [15, 0], league: 'Championship' },
   ]
 
   finishedGames.forEach(g => {
