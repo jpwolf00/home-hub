@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const HOST_SESSION_URL = process.env.HOST_SESSION_URL || 'http://192.168.85.200:8787';
+const HOST_SESSION_URL = process.env.HOST_SESSION_URL || 'http://host.docker.internal:8787';
 
 // Try multiple paths - container mount, host.docker.internal, or direct
 const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || 
