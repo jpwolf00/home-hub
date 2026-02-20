@@ -106,6 +106,12 @@ export async function parseSessionLogs(): Promise<ParsedUsage[]> {
   }
   
   console.log('[usage] Total entries parsed:', results.length);
+  
+  // Log some timestamp samples
+  if (results.length > 0) {
+    console.log('[usage] First 3 timestamps:', results.slice(0, 3).map(e => e.timestamp));
+  }
+  
   return results;
 }
 

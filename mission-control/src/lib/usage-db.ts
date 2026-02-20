@@ -9,6 +9,9 @@ async function getUsageData(): Promise<ParsedUsage[]> {
   if (!cachedData || now - lastParseTime > CACHE_TTL_MS) {
     cachedData = await parseSessionLogs();
     lastParseTime = now;
+    console.log('[usage-db] Updated cache with', cachedData.length, 'entries');
+  } else {
+    console.log('[usage-db] Using cached', cachedData.length, 'entries');
   }
   return cachedData;
 }
