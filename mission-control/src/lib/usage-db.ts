@@ -19,6 +19,7 @@ async function getUsageData(): Promise<ParsedUsage[]> {
 export async function queryUsageGlobal(range: string = '24h') {
   const all = await getUsageData();
   const filtered = filterByRange(all, range);
+  console.log('[usage-db] All:', all.length, 'Filtered:', filtered.length, 'Range:', range);
   
   const totals = filtered.reduce((acc, u) => ({
     requests: acc.requests + 1,
