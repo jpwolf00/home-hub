@@ -2,13 +2,9 @@
 import fs from 'fs';
 import path from 'path';
 
+// Local volume mount path (set by Coolify persistent storage)
+const SESSION_LOG_PATH = '/app/agents/main/sessions';
 const HOST_SESSION_URL = process.env.HOST_SESSION_URL || 'http://host.docker.internal:8787';
-
-// Try multiple paths - container mount, host.docker.internal, or direct
-const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || 
-  (fs.existsSync('/app/agents/main/sessions') ? '/app/agents/main/sessions' :
-   fs.existsSync('/host/home/jpwolf00/.openclaw/agents/main/sessions') ? '/host/home/jpwolf00/.openclaw/agents/main/sessions' :
-   '/home/jpwolf00/.openclaw/agents/main/sessions');
 
 export interface ParsedUsage {
   timestamp: string;
