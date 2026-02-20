@@ -76,10 +76,15 @@ export default function UsagePage() {
         fetch('/api/usage/alerts?status=open'),
       ]);
       
-      setGlobal(await globalRes.json());
-      setAgents((await agentsRes.json()).agents);
-      setModels((await modelsRes.json()).models);
-      setAlerts((await alertsRes.json()).alerts);
+      const globalData = await globalRes.json();
+      const agentsData = await agentsRes.json();
+      const modelsData = await modelsRes.json();
+      const alertsData = await alertsRes.json();
+      
+      setGlobal(globalData);
+      setAgents(agentsData.agents || agentsData || []);
+      setModels(modelsData.models || modelsData || []);
+      setAlerts(alertsData.alerts || alertsData || []);
     } catch (e) {
       console.error('Error fetching data:', e);
     }
