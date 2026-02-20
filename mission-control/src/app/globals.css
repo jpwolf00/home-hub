@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1020; color: #e8ecf3; }
+a { color: inherit; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+.grid { display: grid; gap: 12px; }
+.panel { background: #141a2f; border: 1px solid #26304d; border-radius: 12px; padding: 12px; }
+.banner { background: #3a2b00; color: #ffd98b; border: 1px solid #7d5c0d; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+.muted { color: #9ba8c7; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+.pill-healthy { background: #0f3a25; color: #8ef0b7; }
+.pill-degraded { background: #3a2610; color: #ffd7a0; }
+.status-running { color: #7dd3fc; }
+.status-blocked, .status-error { color: #fca5a5; }
+.status-completed, .status-idle { color: #86efac; }
+.status-offline { color: #9ca3af; }
+.card { background: #0f1529; border: 1px solid #253357; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+.stalled { background: #5d1f1f; color: #fecaca; border-radius: 999px; font-size: 11px; padding: 2px 7px; margin-left: 6px; }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { border-bottom: 1px solid #28345a; padding: 8px; text-align: left; font-size: 13px; }
+.loading { opacity: .75; }
+.error { color: #fca5a5; }
+.columns { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1200px) { .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

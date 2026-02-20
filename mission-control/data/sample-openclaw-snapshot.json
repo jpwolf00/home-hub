@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-02-20T00:04:30.000Z",
+  "workflows": [
+    {
+      "id": "wf-task-001",
+      "title": "Mission Control MVP spec",
+      "workflow": "mission-control-mvp",
+      "status": "In Progress",
+      "ownerAgent": "architect",
+      "specPath": "/home/jpwolf00/.openclaw/workspace/home-hub/SPEC-mission-control-mvp.md",
+      "createdAt": "2026-02-19T23:00:00.000Z",
+      "updatedAt": "2026-02-20T00:04:00.000Z",
+      "notes": "Awaiting implementer handoff"
+    }
+  ],
+  "agents": [
+    {
+      "sessionKey": "agent:architect:subagent:example",
+      "runId": "423b220f-4a7b-415c-9b80-f1485e237dcd",
+      "model": "openai-codex/gpt-5.3-codex",
+      "runtimeSeconds": 1320,
+      "status": "running",
+      "lastSeen": "2026-02-20T00:05:10.000Z",
+      "workflow": "mission-control-mvp",
+      "currentTaskId": "wf-task-001"
+    }
+  ]
+}

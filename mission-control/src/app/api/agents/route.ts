@@ -1,0 +1,16 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { ensureBootstrapped } from '@/lib/bootstrap';
+import { queryAgents } from '@/lib/db';
+import { runtimeState } from '@/lib/state';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  ensureBootstrapped();
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get('status') ?? undefined;
+  const activeOnly = (searchParams.get('activeOnly') ?? 'true') !== 'false';
+
+  const items = queryAgents(status, activeOnly);
+  return NextResponse.json({ ok: true, generatedAt: runtimeState.generatedAt, stale: runtimeState.stale, items });
+}
