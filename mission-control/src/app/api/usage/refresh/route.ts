@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { refreshUsageData } from '@/lib/usage-parser';
+import { refreshUsageData } from '@/lib/usage-db';
 
 export async function POST() {
   try {
