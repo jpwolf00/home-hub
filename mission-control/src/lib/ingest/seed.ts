@@ -165,7 +165,7 @@ export function ingestSeed() {
       runtimeState.checks.seed = 'ok';
       seeded = true;
     } catch (error) {
-      evtseed', 'Failed('error', ' to seed defaults', { error: String(error) });
+      evt('error', 'seed', 'Failed to seed defaults', { error: String(error) });
       runtimeState.checks.seed = 'failed';
     }
   }
@@ -175,8 +175,8 @@ export function ingestSeed() {
     upsertAgent(SYNTHETIC_AGENT);
     runtimeState.activeSources.add('seed');
     evt('info', 'seed', 'Added synthetic ingestion agent');
-error) {
-    // Ignore - agent upsert may fail but  } catch ( that's ok
+  } catch (error) {
+    // Ignore - agent upsert may fail but that's ok
   }
   
   return seeded;

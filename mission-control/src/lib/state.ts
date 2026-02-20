@@ -33,14 +33,34 @@ export const runtimeState: {
   generatedAt: string | null;
   stale: boolean;
   issues: Set<HealthIssue>;
-  checks: { db: 'ok' | 'error'; snapshot: 'ok' | 'missing' | 'stale'; coolify: 'ok' | 'unreachable' | 'unknown' };
+  checks: { db: 'ok' | 'error'; snapshot: 'ok' | 'missing' | 'stale'; coolify: 'ok' | 'unreachable' | 'unknown'; seed: 'unused' | 'ok' | 'failed' };
   activeSources: Set<DataSource>;
+  dataCounts: { workflows: number; agents: number; events: number };
   lastRefreshAt: string | null;
 } = {
   generatedAt: null,
   stale: false,
   issues: new Set<HealthIssue>(),
-  checks: { db: 'ok', snapshot: 'missing', coolify: 'unknown' },
+  checks: { db: 'ok', snapshot: 'missing', coolify: 'unknown', seed: 'unused' },
   activeSources: new Set<DataSource>(),
+  dataCounts: { workflows: 0, agents: 0, events: 0 },
   lastRefreshAt: null,
 };
+
+export function updateDataCounts(workflows: number, agents: number, events: number) {
+  runtimeState.dataCounts = { workflows, agents, events };
+}
+
+export function hasUsableData(): boolean {
+  return (
+    runtimeState.dataCounts.workflows > 0 ||
+    runtimeState.dataCounts.agents > 0 ||
+    runtimeState.activeSources.has('coolify')
+  );
+}
+
+export function isHealthy(): boolean {
+  // Healthy if DB is ok and we have some data or a data source
+  if (runtimeState.checks.db === 'error') return false;
+  return hasUsableData() || runtimeState.activeSources.size > 0;
+}
