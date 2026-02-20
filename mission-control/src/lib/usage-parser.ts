@@ -54,7 +54,9 @@ export async function parseSessionLogs(): Promise<ParsedUsage[]> {
   const results: ParsedUsage[] = [];
   
   // First try: local filesystem
+  console.log('[usage] Checking path:', SESSION_LOG_PATH, 'exists:', fs.existsSync(SESSION_LOG_PATH));
   if (fs.existsSync(SESSION_LOG_PATH)) {
+    console.log('[usage] Reading from local path:', SESSION_LOG_PATH);
     console.log('[usage] Reading from local path:', SESSION_LOG_PATH);
     const files = fs.readdirSync(SESSION_LOG_PATH).filter(f => f.endsWith('.jsonl'));
     
