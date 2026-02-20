@@ -2,7 +2,11 @@
 import fs from 'fs';
 import path from 'path';
 
-const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || '/app/agents/main/sessions';
+// Try multiple paths - container mount, host.docker.internal, or direct
+const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || 
+  (fs.existsSync('/app/agents/main/sessions') ? '/app/agents/main/sessions' :
+   fs.existsSync('/host/home/jpwolf00/.openclaw/agents/main/sessions') ? '/host/home/jpwolf00/.openclaw/agents/main/sessions' :
+   '/home/jpwolf00/.openclaw/agents/main/sessions');
 
 export interface ParsedUsage {
   timestamp: string;
