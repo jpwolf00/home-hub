@@ -25,7 +25,7 @@ export const env = {
   coolifyAppUuid: process.env.COOLIFY_APP_UUID,
 };
 
-export type HealthIssue = 'db_error' | 'coolify_unreachable' | 'no_data_sources';
+export type HealthIssue = 'db_error' | 'coolify_unreachable';
 
 export type DataSource = 'snapshot' | 'seed' | 'coolify';
 
@@ -33,41 +33,14 @@ export const runtimeState: {
   generatedAt: string | null;
   stale: boolean;
   issues: Set<HealthIssue>;
-  warnings: Set<string>;
-  checks: { 
-    db: 'ok' | 'error'; 
-    snapshot: 'ok' | 'missing' | 'stale' | 'disabled'; 
-    coolify: 'ok' | 'unreachable' | 'unknown';
-    seed: 'unused' | 'ok' | 'failed';
-  };
+  checks: { db: 'ok' | 'error'; snapshot: 'ok' | 'missing' | 'stale'; coolify: 'ok' | 'unreachable' | 'unknown' };
   activeSources: Set<DataSource>;
-  dataCounts: { workflows: number; agents: number; events: number };
   lastRefreshAt: string | null;
 } = {
   generatedAt: null,
   stale: false,
   issues: new Set<HealthIssue>(),
-  warnings: new Set<string>(),
-  checks: { db: 'ok', snapshot: 'missing', coolify: 'unknown', seed: 'unused' },
+  checks: { db: 'ok', snapshot: 'missing', coolify: 'unknown' },
   activeSources: new Set<DataSource>(),
-  dataCounts: { workflows: 0, agents: 0, events: 0 },
   lastRefreshAt: null,
 };
-
-export function updateDataCounts(workflows: number, agents: number, events: number) {
-  runtimeState.dataCounts = { workflows, agents, events };
-}
-
-export function hasUsableData(): boolean {
-  return (
-    runtimeState.dataCounts.workflows > 0 ||
-    runtimeState.dataCounts.agents > 0 ||
-    runtimeState.activeSources.has('coolify')
-  );
-}
-
-export function isHealthy(): boolean {
-  if (runtimeState.checks.db === 'error') return false;
-  if (runtimeState.issues.has('no_data_sources') && !hasUsableData()) return false;
-  return true;
-}
