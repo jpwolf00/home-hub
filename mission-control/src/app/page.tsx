@@ -1,6 +1,6 @@
 import { ensureBootstrapped } from '@/lib/bootstrap';
-import { latestDeploy, queryAgents, queryEvents, queryWorkflows } from '@/lib/db';
-import { runtimeState } from '@/lib/state';
+import { latestDeploy, queryAgents, queryEvents, queryWorkflows, countWorkflows, countAgents } from '@/lib/db';
+import { runtimeState, hasUsableData } from '@/lib/state';
 import { isStalled } from '@/lib/stalled';
 import type { WorkflowStatus } from '@/lib/types';
 
@@ -31,7 +31,11 @@ export default async function HomePage() {
   }
 
   const grouped = Object.fromEntries(statuses.map((s) => [s, workflows.filter((w) => w.status === s)]));
-  const health = runtimeState.issues.size ? 'Degraded' : 'Healthy';
+  const isDegraded = runtimeState.issues.size > 0 || !hasUsableData();
+  const health = isDegraded ? 'Degraded' : 'Healthy';
+  const hasData = workflows.length > 0 || agents.length > 0 || events.length > 0;
+  const snapshotMissing = runtimeState.checks.snapshot === 'missing';
+  const showBanner = snapshotMissing && hasData;
 
   return (
     <main className="container grid">
@@ -39,13 +43,19 @@ export default async function HomePage() {
         <h1 style={{ margin: 0 }}>Mission Control</h1>
         <div>
           <span className="muted" style={{ marginRight: 10 }}>Last refresh {fmt(runtimeState.lastRefreshAt)}</span>
-          <span className={`pill ${runtimeState.issues.size ? 'pill-degraded' : 'pill-healthy'}`}>{health}</span>
+          <span className={`pill ${isDegraded ? 'pill-degraded' : 'pill-healthy'}`}>{health}</span>
         </div>
       </section>
 
-      {(runtimeState.checks.snapshot === 'missing' || runtimeState.checks.snapshot === 'stale') && (
+      {showBanner && (
         <div className="banner">
-          Snapshot data is {runtimeState.checks.snapshot}. Rendering last known state.
+          Snapshot unavailable — showing seeded/live data
+        </div>
+      )}
+
+      {!hasData && !hardError && (
+        <div className="banner">
+          No data available. System is collecting data from active sources.
         </div>
       )}
 
@@ -84,7 +94,7 @@ export default async function HomePage() {
           <section className="panel">
             <h2>Active / Recent Agents</h2>
             {agents.length === 0 ? (
-              <div className="muted loading">No active agents detected.</div>
+              <div className="muted loading">No active agents detected. Synthetic system agent may be running.</div>
             ) : (
               <table className="table">
                 <thead>

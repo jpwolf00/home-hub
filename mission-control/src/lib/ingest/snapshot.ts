@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import { insertEvent, upsertAgent, upsertWorkflow } from '@/lib/db';
 import { env } from '@/lib/env';
 import { runtimeState } from '@/lib/state';
+import { insertEvent, upsertAgent, upsertWorkflow } from '@/lib/db';
 import type { Agent, Workflow } from '@/lib/types';
 
 function evt(level: 'info' | 'warn' | 'error', source: string, message: string, metadata?: unknown) {
@@ -16,12 +16,25 @@ function evt(level: 'info' | 'warn' | 'error', source: string, message: string, 
   });
 }
 
+// Track if we've already logged the missing snapshot warning to avoid spam
+let warnedSnapshotMissing = false;
+
 export function ingestSnapshot() {
   try {
     if (!fs.existsSync(env.snapshotPath)) {
       runtimeState.checks.snapshot = 'missing';
-      runtimeState.issues.add('snapshot_missing');
-      evt('warn', 'openclaw', 'Snapshot missing', { path: env.snapshotPath });
+      
+      // Only warn once per runtime to avoid spam
+      if (!warnedSnapshotMissing) {
+        evt('warn', 'openclaw', 'Snapshot missing; fallback ingestion active', { path: env.snapshotPath });
+        warnedSnapshotMissing = true;
+      }
+      
+      // Only add as warning, not as degrading issue
+      // Remove any existing snapshot-related issues
+      runtimeState.issues.delete('snapshot_missing');
+      runtimeState.issues.delete('snapshot_stale');
+      
       return;
     }
 
@@ -41,10 +54,16 @@ export function ingestSnapshot() {
     const stale = !Number.isFinite(generatedTime) || Date.now() - generatedTime > env.snapshotMaxAgeMs;
     runtimeState.stale = stale;
     runtimeState.checks.snapshot = stale ? 'stale' : 'ok';
+    
+    // Add snapshot as active source
+    runtimeState.activeSources.add('snapshot');
+    
+    // Clear snapshot-related issues
     runtimeState.issues.delete('snapshot_missing');
 
     if (stale) {
-      runtimeState.issues.add('snapshot_stale');
+      runtimeState.issues.delete('snapshot_stale');
+      runtimeState.issues.add('snapshot_stale' as any);
       evt('warn', 'openclaw', `Snapshot stale (>${env.snapshotMaxAgeMs}ms)`, { generatedAt: parsed.generatedAt });
     } else {
       runtimeState.issues.delete('snapshot_stale');

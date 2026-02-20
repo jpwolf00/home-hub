@@ -142,6 +142,16 @@ export function queryEvents(limit = 10): ActivityEvent[] {
   return db.prepare('SELECT * FROM activity_events ORDER BY createdAt DESC LIMIT ?').all(limit) as ActivityEvent[];
 }
 
+export function countWorkflows(): number {
+  const result = db.prepare('SELECT COUNT(*) as count FROM workflows').get() as { count: number };
+  return result.count;
+}
+
+export function countAgents(): number {
+  const result = db.prepare('SELECT COUNT(*) as count FROM agents').get() as { count: number };
+  return result.count;
+}
+
 export function latestDeploy(): any {
   return db.prepare('SELECT * FROM deploy_status ORDER BY updatedAt DESC LIMIT 1').get();
 }
