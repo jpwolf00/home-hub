@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const end = searchParams.get('end') || undefined;
 
   try {
-    const data = queryUsageGlobal(range);
+    const data = await queryUsageGlobal(range);
     return NextResponse.json(data);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

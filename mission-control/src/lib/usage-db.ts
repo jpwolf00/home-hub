@@ -4,17 +4,17 @@ let cachedData: ParsedUsage[] | null = null;
 let lastParseTime = 0;
 const CACHE_TTL_MS = 60000; // 1 minute cache
 
-function getUsageData(): ParsedUsage[] {
+async function getUsageData(): Promise<ParsedUsage[]> {
   const now = Date.now();
   if (!cachedData || now - lastParseTime > CACHE_TTL_MS) {
-    cachedData = parseSessionLogs();
+    cachedData = await parseSessionLogs();
     lastParseTime = now;
   }
   return cachedData;
 }
 
-export function queryUsageGlobal(range: string = '24h') {
-  const all = getUsageData();
+export async function queryUsageGlobal(range: string = '24h') {
+  const all = await getUsageData();
   const filtered = filterByRange(all, range);
   
   const totals = filtered.reduce((acc, u) => ({
@@ -65,8 +65,8 @@ export function queryUsageGlobal(range: string = '24h') {
   };
 }
 
-export function queryUsageByAgent(range: string = '24h') {
-  const all = getUsageData();
+export async function queryUsageByAgent(range: string = '24h') {
+  const all = await getUsageData();
   const filtered = filterByRange(all, range);
   
   const byAgent: Record<string, typeof filtered> = {};
@@ -86,8 +86,8 @@ export function queryUsageByAgent(range: string = '24h') {
   })).sort((a, b) => b.totalTokens - a.totalTokens);
 }
 
-export function queryUsageByModel(range: string = '24h') {
-  const all = getUsageData();
+export async function queryUsageByModel(range: string = '24h') {
+  const all = await getUsageData();
   const filtered = filterByRange(all, range);
   
   const byModel: Record<string, typeof filtered> = {};

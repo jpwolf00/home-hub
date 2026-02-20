@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const range = searchParams.get('range') || '24h';
 
   try {
-    const data = queryUsageByModel(range);
+    const data = await queryUsageByModel(range);
     return NextResponse.json(data);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

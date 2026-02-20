@@ -1,6 +1,8 @@
-// Simple JSONL parser for session logs - no DB dependency
+// Simple JSONL parser for session logs - fetches from local server or reads local files
 import fs from 'fs';
 import path from 'path';
+
+const HOST_SESSION_URL = process.env.HOST_SESSION_URL || 'http://192.168.85.200:8787';
 
 // Try multiple paths - container mount, host.docker.internal, or direct
 const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || 
@@ -52,31 +54,58 @@ function parseUsageFromLine(line: string, filename: string): ParsedUsage | null 
   }
 }
 
-export function parseSessionLogs(): ParsedUsage[] {
+export async function parseSessionLogs(): Promise<ParsedUsage[]> {
   const results: ParsedUsage[] = [];
   
-  if (!fs.existsSync(SESSION_LOG_PATH)) {
-    console.warn('[usage] Session log path not found:', SESSION_LOG_PATH);
+  // First try: local filesystem
+  if (fs.existsSync(SESSION_LOG_PATH)) {
+    console.log('[usage] Reading from local path:', SESSION_LOG_PATH);
+    const files = fs.readdirSync(SESSION_LOG_PATH).filter(f => f.endsWith('.jsonl'));
+    
+    for (const file of files.slice(0, 50)) { // Limit to 50 files for performance
+      const filePath = path.join(SESSION_LOG_PATH, file);
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const lines = content.split('\n').filter(l => l.trim());
+        
+        for (const line of lines) {
+          const parsed = parseUsageFromLine(line, file);
+          if (parsed) results.push(parsed);
+        }
+      } catch (e) {
+        console.warn('[usage] Error reading', file, e);
+      }
+    }
     return results;
   }
   
-  const files = fs.readdirSync(SESSION_LOG_PATH).filter(f => f.endsWith('.jsonl'));
-  
-  for (const file of files) {
-    const filePath = path.join(SESSION_LOG_PATH, file);
-    try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const lines = content.split('\n').filter(l => l.trim());
-      
-      for (const line of lines) {
-        const parsed = parseUsageFromLine(line, file);
-        if (parsed) results.push(parsed);
+  // Second try: fetch from host HTTP server
+  console.log('[usage] Trying to fetch from host:', HOST_SESSION_URL);
+  try {
+    const listRes = await fetch(HOST_SESSION_URL + '/');
+    const html = await listRes.text();
+    const fileMatches = html.match(/href="([^"]*\.jsonl)"/g) || [];
+    
+    for (const match of fileMatches.slice(0, 50)) {
+      const filename = match.replace('href="', '').replace('"', '');
+      try {
+        const fileRes = await fetch(HOST_SESSION_URL + '/' + filename);
+        const content = await fileRes.text();
+        const lines = content.split('\n').filter(l => l.trim());
+        
+        for (const line of lines) {
+          const parsed = parseUsageFromLine(line, filename);
+          if (parsed) results.push(parsed);
+        }
+      } catch (e) {
+        console.warn('[usage] Error fetching', filename, e);
       }
-    } catch (e) {
-      console.warn('[usage] Error reading', file, e);
     }
+  } catch (e) {
+    console.warn('[usage] Could not fetch from host:', e);
   }
   
+  console.log('[usage] Total entries parsed:', results.length);
   return results;
 }
 
