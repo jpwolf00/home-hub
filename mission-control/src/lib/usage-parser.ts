@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const SESSION_LOG_PATH = '/home/jpwolf00/.openclaw/agents/main/sessions';
+const SESSION_LOG_PATH = process.env.SESSION_LOG_PATH || '/app/agents/main/sessions';
 
 export interface ParsedUsage {
   timestamp: string;

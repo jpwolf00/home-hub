@@ -41,7 +41,8 @@ export default async function HomePage() {
     <main className="container grid">
       <section className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0 }}>Mission Control</h1>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <a href="/usage" style={{ color: '#fff', textDecoration: 'underline' }}>Usage</a>
           <span className="muted" style={{ marginRight: 10 }}>Last refresh {fmt(runtimeState.lastRefreshAt)}</span>
           <span className={`pill ${isDegraded ? 'pill-degraded' : 'pill-healthy'}`}>{health}</span>
         </div>
