@@ -35,4 +35,6 @@ export const env = {
   backlogPath: process.env.MC_BACKLOG_PATH ?? path.join(cwd, '..', 'BACKLOG.md'),
   seedDefaultsJson: process.env.MC_SEED_DEFAULTS_JSON,
   minSeedItems: num('MC_MIN_SEED_ITEMS', 3),
+  // Model Usage Portal
+  sessionsPath: process.env.MC_SESSIONS_PATH ?? '/home/jpwolf00/.openclaw/agents/main/sessions',
 };

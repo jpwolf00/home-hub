@@ -12,6 +12,8 @@ ensureDir(env.dbPath);
 const db = new Database(env.dbPath);
 db.pragma('journal_mode = WAL');
 
+export { db };
+
 export function initDb() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS workflows (
@@ -154,4 +156,93 @@ export function countAgents(): number {
 
 export function latestDeploy(): any {
   return db.prepare('SELECT * FROM deploy_status ORDER BY updatedAt DESC LIMIT 1').get();
+}
+
+// ===== USAGE TABLES =====
+
+export function initUsageDb() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS usage_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ts TEXT NOT NULL,
+      agent_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      provider TEXT,
+      model TEXT NOT NULL,
+      role TEXT,
+      input_tokens INTEGER DEFAULT 0,
+      output_tokens INTEGER DEFAULT 0,
+      cache_read_tokens INTEGER DEFAULT 0,
+      cache_write_tokens INTEGER DEFAULT 0,
+      total_tokens INTEGER DEFAULT 0,
+      stop_reason TEXT,
+      error_message TEXT,
+      source_file TEXT,
+      source_offset INTEGER,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS usage_rollups_hourly (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hour_bucket TEXT NOT NULL,
+      agent_id TEXT NOT NULL,
+      provider TEXT,
+      model TEXT NOT NULL,
+      request_count INTEGER DEFAULT 0,
+      input_tokens INTEGER DEFAULT 0,
+      output_tokens INTEGER DEFAULT 0,
+      total_tokens INTEGER DEFAULT 0,
+      error_count INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(hour_bucket, agent_id, model)
+    );
+
+    CREATE TABLE IF NOT EXISTS alert_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ts TEXT NOT NULL,
+      severity TEXT NOT NULL CHECK(severity IN ('warning','critical')),
+      rule_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      details_json TEXT,
+      status TEXT DEFAULT 'open' CHECK(status IN ('open','acked','resolved')),
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS parser_state (
+      source_file TEXT PRIMARY KEY,
+      last_offset INTEGER DEFAULT 0,
+      last_ts TEXT,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS alert_config (
+      rule_id TEXT PRIMARY KEY,
+      config_json TEXT NOT NULL,
+      enabled INTEGER DEFAULT 1,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_usage_ts ON usage_events(ts);
+    CREATE INDEX IF NOT EXISTS idx_usage_agent ON usage_events(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_usage_model ON usage_events(model);
+    CREATE INDEX IF NOT EXISTS idx_rollups_hour ON usage_rollups_hourly(hour_bucket);
+    CREATE INDEX IF NOT EXISTS idx_alert_status ON alert_events(status);
+  `);
+
+  // Insert default alert config if not exists
+  const existing = db.prepare('SELECT COUNT(*) as cnt FROM alert_config').get() as { cnt: number };
+  if (existing.cnt === 0) {
+    db.prepare(`INSERT INTO alert_config (rule_id, config_json, enabled) VALUES (?, ?, 1)`).run(
+      'provider_daily_limit',
+      JSON.stringify({ openai: 10000000, anthropic: 5000000, nanogpt: 50000000 })
+    );
+    db.prepare(`INSERT INTO alert_config (rule_id, config_json, enabled) VALUES (?, ?, 1)`).run(
+      'spike_multiplier',
+      JSON.stringify({ value: 2.0 })
+    );
+    db.prepare(`INSERT INTO alert_config (rule_id, config_json, enabled) VALUES (?, ?, 1)`).run(
+      'error_rate_threshold',
+      JSON.stringify({ value: 0.05 })
+    );
+  }
 }

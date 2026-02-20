@@ -1,4 +1,4 @@
-import { initDb, countWorkflows, countAgents, queryEvents } from '@/lib/db';
+import { initDb, initUsageDb, countWorkflows, countAgents, queryEvents } from '@/lib/db';
 import { env } from '@/lib/env';
 import { ingestCoolify } from './coolify';
 import { ingestSnapshot } from './snapshot';
@@ -13,6 +13,7 @@ export function startScheduler() {
   started = true;
 
   initDb();
+  initUsageDb();
   
   // Ingest from available sources
   ingestSnapshot();
