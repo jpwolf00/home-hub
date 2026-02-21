@@ -102,7 +102,7 @@ async function fetchESPNData(): Promise<Match[]> {
           const awayTeam = away.team?.shortDisplayName || away.team?.name
           
           // Check if interesting team
-          if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))) {
+          if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t)) || homeTeam === 'Louisville' || awayTeam === 'Louisville') {
             return
           }
           
@@ -145,7 +145,7 @@ async function fetchESPNData(): Promise<Match[]> {
         const awayTeam = away.team?.shortDisplayName || away.team?.name
         
         // Check for Kentucky or other teams we care about
-        if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))) {
+        if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t)) || homeTeam === 'Louisville' || awayTeam === 'Louisville') {
           return
         }
         

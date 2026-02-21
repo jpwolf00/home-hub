@@ -619,7 +619,7 @@ function SportsColumn() {
 
   // Sort by date and show next 5 games (include LIVE games)
   const upcomingGames = matches
-    .filter(m => m.status === 'SCHEDULED' || m.status === 'PRE' || m.status === 'PRE-GAME' || m.status === 'POST')
+    .filter(m => m.status === 'SCHEDULED' || m.status === 'PRE' || m.status === 'PRE-GAME' || m.status === 'IN')
     .sort((a, b) => {
       // LIVE games first, then by date
       if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
