@@ -9,7 +9,7 @@ const statuses: WorkflowStatus[] = ['Planned', 'In Progress', 'Review', 'Blocked
 function fmt(s?: string | null) {
   if (!s) return '—';
   const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('en-US', { timeZone: 'America/New_York' });
 }
 
 export default async function HomePage() {
