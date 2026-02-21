@@ -10,7 +10,9 @@ jobs:
     steps:
       - name: Trigger Dokploy deployment
         run: |
-          curl -s -X POST "http://localhost:3000/api/application.deployWithGithubWebhook?token=KbJ8nN1CvmDzA6bRYqp3P" \
+          RESPONSE=$(curl -s -X POST "http://localhost:3000/api/application.deploy" \
             -H "Content-Type: application/json" \
-            -d '{"ref":"refs/heads/master","repository":{"name":"home-hub","full_name":"jpwolf00/home-hub"}}'
-          echo "Deploy triggered"
+            -H "x-api-key: EVAqvQjfcENShqTtXJRXOhqckKfFyOuznNUyxqjGhPpnHOYihBpRoODwONiLufhw" \
+            -d '{"applicationId":"GXkG69roBjCi72a-VJLep"}')
+          echo "Response: $RESPONSE"
+          echo "Deploy triggered for home-hub"
