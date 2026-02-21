@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import FrenchWidget from '@/components/widgets/FrenchWidget';
 import FrenchNewsWidget from '@/components/widgets/FrenchNewsWidget';
+import { frenchVocabulary, frenchVerbs } from '@/lib/french-data';
 
 // Color tokens from spec
 const COLORS = {
@@ -170,101 +171,10 @@ function FrenchColumn() {
   const PARIS_TRIP = new Date('2026-05-09T00:00:00-04:00');
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
-  // Extended French phrases with pronunciation
-  const FRENCH_PHRASES = [
-    { french: 'Bonjour', pronunciation: 'bon-ZHOOR', english: 'Hello' },
-    { french: 'Merci beaucoup', pronunciation: 'mair-SEE boh-KOO', english: 'Thank you very much' },
-    { french: "S'il vous plaît", pronunciation: 'seel voo PLEH', english: 'Please' },
-    { french: 'Excusez-moi', pronunciation: 'ex-koo-ZAY mwah', english: 'Excuse me' },
-    { french: "Je ne comprends pas", pronunciation: 'zhuh nuh kohm-PRAHN pah', english: "I don't understand" },
-    { french: 'Parlez-vous anglais?', pronunciation: 'par-LAY voo on-GLEH', english: 'Do you speak English?' },
-    { french: 'Où est...?', pronunciation: 'oo EH', english: 'Where is...?' },
-    { french: 'À gauche', pronunciation: 'ah GOHSH', english: 'To the left' },
-    { french: 'À droite', pronunciation: 'ah DRWAHT', english: 'To the right' },
-    { french: 'Tout droit', pronunciation: 'too DRWAH', english: 'Straight ahead' },
-    { french: "C'est loin?", pronunciation: 'seh LWAN', english: 'Is it far?' },
-    { french: "L'adresse, s'il vous plaît", pronunciation: 'lah-DRESS seel voo PLEH', english: 'The address, please' },
-    { french: 'Le métro', pronunciation: 'luh may-TROH', english: 'The subway' },
-    { french: 'La gare', pronunciation: 'lah GAHR', english: 'The train station' },
-    { french: "L'aéroport", pronunciation: 'lah-ay-roh-POR', english: 'The airport' },
-    { french: 'Un billet, s’il vous plaît', pronunciation: 'un bee-YEH seel voo PLEH', english: 'A ticket, please' },
-    { french: "C'est quelle heure?", pronunciation: 'seh kel UHR', english: 'What time is it?' },
-    { french: 'Le train pour...', pronunciation: 'luh TRAN poor', english: 'The train to...' },
-    { french: 'La valise', pronunciation: 'lah vah-LEEZ', english: 'Suitcase' },
-    { french: 'Le passeport', pronunciation: 'luh pahs-POR', english: 'Passport' },
-    { french: 'Une chambre', pronunciation: 'oon SHAHM-bruh', english: 'A room' },
-    { french: "L'hôtel", pronunciation: 'loh-TEL', english: 'Hotel' },
-    { french: 'La clé', pronunciation: 'lah klay', english: 'The key' },
-    { french: "L'ascenseur", pronunciation: 'lah-sahn-SUHR', english: 'Elevator' },
-    { french: "L'escalier", pronunciation: 'les-kah-LYAY', english: 'Stairs' },
-    { french: 'Le petit déjeuner', pronunciation: 'luh puh-TEE day-zhuh-NAY', english: 'Breakfast' },
-    { french: 'Le dîner', pronunciation: 'luh dee-NAY', english: 'Dinner' },
-    { french: "L'addition, s'il vous plaît", pronunciation: 'lah-dee-SYON seel voo PLEH', english: 'The bill, please' },
-    { french: "C'est délicieux!", pronunciation: 'seh day-lee-SYUH', english: "It's delicious!" },
-    { french: "L'eau, s'il vous plaît", pronunciation: 'loh seel voo PLEH', english: 'Water, please' },
-    { french: 'Le café', pronunciation: 'luh kah-FAY', english: 'Coffee' },
-    { french: 'Le vin', pronunciation: 'luh VAN', english: 'Wine' },
-    { french: 'La bière', pronunciation: 'lah BYEHR', english: 'Beer' },
-    { french: "C'est combien?", pronunciation: 'seh kohm-BYAN', english: 'How much is it?' },
-    { french: 'Trop cher', pronunciation: 'troh SHEHR', english: 'Too expensive' },
-    { french: "J'achète", pronunciation: 'zhah-SHET', english: 'I buy / I take it' },
-    { french: 'La taille', pronunciation: 'lah TAHY', english: 'Size' },
-    { french: 'La couleur', pronunciation: 'lah koo-LUHR', english: 'Color' },
-    { french: "J'ai besoin d'aide", pronunciation: 'zhay buh-ZWAN DED', english: 'I need help' },
-    { french: "Appelez la police!", pronunciation: 'ah-puh-LAY lah poh-LEES', english: 'Call the police!' },
-    { french: "Appelez un médecin!", pronunciation: 'ah-puh-LAY un mayd-SAN', english: 'Call a doctor!' },
-    { french: "L'hôpital", pronunciation: 'loh-pee-TAHL', english: 'Hospital' },
-    { french: 'La pharmacie', pronunciation: 'lah far-mah-SEE', english: 'Pharmacy' },
-    { french: "Comment vous appelez-vous?", pronunciation: 'koh-MAHN voo zah-puh-LAY voo', english: 'What is your name?' },
-    { french: "Je m'appelle...", pronunciation: "zhuh mah-PEL", english: "My name is..." },
-    { french: "Enchanté(e)", pronunciation: 'ahn-shahn-TAY', english: 'Nice to meet you' },
-    { french: 'Comment allez-vous?', pronunciation: 'koh-MAHN tah-LAY voo', english: 'How are you?' },
-    { french: "Très bien, merci", pronunciation: 'treh BYAN mair-SEE', english: 'Very well, thank you' },
-    { french: 'Je suis américain/américaine', pronunciation: 'zhuh swee ah-may-ree-KAN', english: "I'm American" },
-    { french: "D'où venez-vous?", pronunciation: 'duh vuh-NAY voo', english: 'Where are you from?' },
-    { french: 'Je viens de...', pronunciation: 'zhuh VYAN duh', english: 'I am from...' },
-    // More advanced
-    { french: 'Je voudrais...', pronunciation: 'zhuh voo-DREH', english: 'I would like...' },
-    { french: 'Est-ce que je peux...?', pronunciation: 'ess kuh zhuh PUH', english: 'Can I...?' },
-    { french: "Je ne sais pas", pronunciation: 'zhuh nuh SAY pah', english: "I don't know" },
-    { french: 'Bien sûr', pronunciation: 'BYAN SOOR', english: 'Of course' },
-    { french: 'Peut-être', pronunciation: 'puh-TET-ruh', english: 'Maybe' },
-    { french: "Je suis désolé(e)", pronunciation: 'zhuh swee day-zoh-LAY', english: "I'm sorry" },
-    { french: 'Pardon', pronunciation: 'par-DON', english: 'Sorry' },
-    { french: 'Au revoir', pronunciation: 'oh ruh-VWAHR', english: 'Goodbye' },
-    { french: 'Bonne nuit', pronunciation: 'bun NWEE', english: 'Good night' },
-    { french: 'À bientôt', pronunciation: 'ah byan-TOO', english: 'See you soon' },
-    { french: 'Salut', pronunciation: 'sah-LOO', english: 'Hi / Bye (informal)' },
-    { french: 'Monsieur', pronunciation: 'muh-SYUH', english: 'Mr. / Sir' },
-    { french: 'Madame', pronunciation: 'mah-DAHM', english: 'Mrs. / Ma\'am' },
-    { french: 'Mademoiselle', pronunciation: 'mahdm-WAH-ZEL', english: 'Miss' },
-    { french: "C'est quoi...?", pronunciation: 'seh KWAH', english: "What's...?" },
-    { french: "Qu'est-ce que c'est?", pronunciation: 'kes kuh SEH', english: 'What is that?' },
-    { french: 'Pourquoi?', pronunciation: 'poor-KWAH', english: 'Why?' },
-    { french: 'Parce que...', pronunciation: 'pars kuh', english: 'Because...' },
-    { french: 'OUI', pronunciation: 'WEE', english: 'Yes' },
-    { french: 'NON', pronunciation: 'NOH', english: 'No' },
-    { french: 'Peut-être', pronunciation: 'puh-TET-ruh', english: 'Maybe' },
-    { french: 'Je ne comprends rien', pronunciation: 'zhuh nuh kohm-PRAHN RYAN', english: "I don't understand anything" },
-    { french: "Parlez plus lentement", pronunciation: 'par-LAY ploo lahnt-MAHN', english: 'Speak more slowly' },
-    { french: "Pouvez-vous répéter?", pronunciation: 'poo-VAY voo ray-pay-TAY', english: 'Can you repeat?' },
-    { french: "Je voudrais payer", pronunciation: 'zhuh voo-DREH pay-YAY', english: 'I would like to pay' },
-    { french: 'Acceptez-vous carte?', pronunciation: 'ahk-sep-TAY voo KART', english: 'Do you accept card?' },
-    { french: 'Acceptez-vous espèces?', pronunciation: 'ahk-sep-TAY voo ess-PSS', english: 'Do you accept cash?' },
-    { french: "Où est la salle de bain?", pronunciation: 'oo EH lah SAL duh BAN', english: 'Where is the bathroom?' },
-    { french: 'Les toilettes, s\'il vous plaît', pronunciation: 'lay twah-LET seel voo PLEH', english: 'The toilet, please' },
-    { french: "C'est ouvert", pronunciation: 'seh oo-VEHR', english: "It's open" },
-    { french: "C'est fermé", pronunciation: 'seh fehr-MAY', english: "It's closed" },
-    { french: 'Je suis perdu(e)', pronunciation: 'zhuh swee pehr-DOO', english: "I'm lost" },
-    { french: "Aidez-moi!", pronunciation: 'eh-day MWAH', english: 'Help me!' },
-    { french: "Au secours!", pronunciation: 'oh suh-KOOR', english: 'Help! (emergency)' },
-    // Numbers
-    { french: 'Un, deux, trois', pronunciation: 'UN, DUH, TRWAH', english: 'One, two, three' },
-    { french: 'Quatre, cinq, six', pronunciation: 'KAH-truh, SANK, SEES', english: 'Four, five, six' },
-    { french: 'Sept, huit, neuf', pronunciation: 'SET, WEET, NUF', english: 'Seven, eight, nine' },
-    { french: 'Dix, vingt, cent', pronunciation: 'DEE, VAN, SAHN', english: 'Ten, twenty, hundred' },
-  ];
+  // French vocabulary - 200+ words imported from lib
+  const FRENCH_PHRASES = frenchVocabulary;
 
+  // Verb conjugations
   // Verb conjugations
   const VERB_CONJUGATIONS = [
     { verb: 'être (to be)', present: 'je suis, tu es, il/elle est, nous sommes, vous êtes, ils/elles sont', english: 'to be' },
