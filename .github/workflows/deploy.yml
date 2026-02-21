@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Trigger Dokploy deployment
         run: |
-          RESPONSE=$(curl -s -X POST "http://localhost:3000/api/application.deploy" \
+          RESPONSE=$(curl -s -X POST "http://192.168.85.205:3000/api/application.redeploy" \
             -H "Content-Type: application/json" \
             -H "x-api-key: EVAqvQjfcENShqTtXJRXOhqckKfFyOuznNUyxqjGhPpnHOYihBpRoODwONiLufhw" \
             -d '{"applicationId":"GXkG69roBjCi72a-VJLep"}')
