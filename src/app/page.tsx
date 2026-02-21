@@ -67,7 +67,7 @@ function HeaderStocksWidget() {
       .then(data => {
         if (Array.isArray(data)) setStocks(data);
       })
-      .catch(() => {});
+      .catch((e) => console.error('Sports fetch error:', e));
   };
 
   useEffect(() => {
@@ -105,7 +105,7 @@ function WeatherWidget() {
     fetch('/api/weather')
       .then(r => r.json())
       .then(setWeather)
-      .catch(() => {});
+      .catch((e) => console.error('Sports fetch error:', e));
   };
 
   useEffect(() => {
@@ -216,7 +216,7 @@ function FrenchColumn() {
       fetch('/api/paris-weather')
         .then(r => r.json())
         .then(setParisWeather)
-        .catch(() => {});
+        .catch((e) => console.error('Sports fetch error:', e));
     };
     fetchParisWeather();
     const parisWeatherInterval = setInterval(fetchParisWeather, 10 * 60 * 1000);
@@ -379,7 +379,7 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
         .then((data) => {
           if (Array.isArray(data)) setStories(data);
         })
-        .catch(() => {});
+        .catch((e) => console.error('Sports fetch error:', e));
     };
 
     load();
@@ -458,7 +458,7 @@ function LatestScoresWidget() {
           .slice(0, 5);
         setMatches(finished);
       })
-      .catch(() => {});
+      .catch((e) => console.error('Sports fetch error:', e));
   }, []);
 
   const getRelativeDate = (dateStr: string) => {
@@ -538,7 +538,7 @@ function SportsColumn() {
     fetch('/api/sports')
       .then(r => r.json())
       .then(setMatches)
-      .catch(() => {});
+      .catch((e) => console.error('Sports fetch error:', e));
   };
 
   useEffect(() => {
@@ -714,7 +714,7 @@ function HomeNetworkWidget() {
       fetch('/api/servers')
         .then(r => r.json())
         .then(setData)
-        .catch(() => {});
+        .catch((e) => console.error('Sports fetch error:', e));
     };
     load();
     const interval = setInterval(load, 60_000);
@@ -820,7 +820,7 @@ function NewsTicker() {
           setNews(data.items)
         }
       })
-      .catch(() => {});
+      .catch((e) => console.error('Sports fetch error:', e));
   };
 
   useEffect(() => {
@@ -897,7 +897,7 @@ export default function Dashboard() {
             currentVersion.current = newVersion;
           }
         })
-        .catch(() => {});
+        .catch((e) => console.error('Sports fetch error:', e));
     };
 
     // Check immediately on mount
