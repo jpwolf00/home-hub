@@ -4,4 +4,4 @@ providers = ["node"]
   NODE_VERSION = "20"
 
 [phases.setup]
-  aptPkgs = ["python3"]
+  aptPkgs = ["python3", "gcc", "g++", "make"]
