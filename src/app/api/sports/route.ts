@@ -41,9 +41,9 @@ const MBB_LEAGUE = { id: 'mens-college-basketball', name: 'NCAA Basketball' }
 
 // Teams we care about
 const INTERESTING_TEAMS = [
-  'Chelsea', 'PSG', 'Monaco', 'Wrexham', 'Burnley', 'Wycombe',
-  'Kentucky', 'Georgia', 'Auburn', 'Liverpool', 'Arsenal', 'Manchester City',
-  'Sunderland', 'Tottenham', 'Newcastle',
+  'Chelsea', 'PSG', 'Wrexham',
+  'USA', 'United States',
+  'Kentucky',
 ]
 
 export async function GET() {
