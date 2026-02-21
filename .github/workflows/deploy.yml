@@ -13,6 +13,6 @@ jobs:
           RESPONSE=$(curl -s -X POST "http://192.168.85.205:3000/api/application.redeploy" \
             -H "Content-Type: application/json" \
             -H "x-api-key: EVAqvQjfcENShqTtXJRXOhqckKfFyOuznNUyxqjGhPpnHOYihBpRoODwONiLufhw" \
-            -d '{"applicationId":"GXkG69roBjCi72a-VJLep"}')
+            -d '{"applicationId":"YYIBuxqgDc_5-tNObZp5F"}')
           echo "Response: $RESPONSE"
           echo "Deploy triggered for home-hub"
