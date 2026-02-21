@@ -1,0 +1,16 @@
+name: Deploy to Dokploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, dokploy]
+    steps:
+      - name: Trigger Dokploy deployment
+        run: |
+          curl -s -X POST "http://localhost:3000/api/application.deployWithGithubWebhook?token=KbJ8nN1CvmDzA6bRYqp3P" \
+            -H "Content-Type: application/json" \
+            -d '{"ref":"refs/heads/master","repository":{"name":"home-hub","full_name":"jpwolf00/home-hub"}}'
+          echo "Deploy triggered"
