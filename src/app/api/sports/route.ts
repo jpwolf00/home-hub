@@ -353,7 +353,7 @@ function getLocalSchedule() {
     { home: 'Wrexham', away: 'Bristol City', homeScore: 1, awayScore: 1, daysAgo: 1, time: [15, 0], league: 'League One' },
     { home: 'Arsenal', away: 'Newcastle', homeScore: 2, awayScore: 0, daysAgo: 2, time: [16, 0], league: 'Premier League' },
     { home: 'Manchester City', away: 'Tottenham', homeScore: 4, awayScore: 2, daysAgo: 2, time: [12, 30], league: 'Premier League' },
-    { home: away: 'Sunderland', homeScore: 2, awayScore: 0, daysAgo: 3, time: [15, 0], league: 'Championship' },
+    { home: 'Sheffield United', away: 'Sunderland', homeScore: 2, awayScore: 0, daysAgo: 3, time: [15, 0], league: 'Championship' },
   ]
 
   finishedGames.forEach(g => {
