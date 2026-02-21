@@ -1,4 +1,5 @@
 import './globals.css';
+import { setTimezone } from '@/lib/tz';
 
 export const metadata = {
   title: 'Mission Control',

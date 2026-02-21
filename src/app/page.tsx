@@ -345,6 +345,24 @@ function FrenchColumn() {
           <div className="text-md text-white/60">{currentVerb.english}</div>
         </div>
       </div>
+
+      {/* Question Words */}
+      <div className="bg-[#2B2930] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">❓</span>
+          <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Question Words</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div><span className="text-primary-300">Qui?</span> <span className="text-white/50">- Who</span></div>
+          <div><span className="text-primary-300">Quoi?</span> <span className="text-white/50">- What</span></div>
+          <div><span className="text-primary-300">Oú?</span> <span className="text-white/50">- Where</span></div>
+          <div><span className="text-primary-300">Quand?</span> <span className="text-white/50">- When</span></div>
+          <div><span className="text-primary-300">Pourquoi?</span> <span className="text-white/50">- Why</span></div>
+          <div><span className="text-primary-300">Comment?</span> <span className="text-white/50">- How</span></div>
+          <div><span className="text-primary-300">Lequel?</span> <span className="text-white/50">- Which</span></div>
+          <div><span className="text-primary-300">Combien?</span> <span className="text-white/50">- How many</span></div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -601,7 +619,7 @@ function SportsColumn() {
 
   // Sort by date and show next 5 games (include LIVE games)
   const upcomingGames = matches
-    .filter(m => m.status === 'SCHEDULED' || m.status === 'LIVE' || m.status === 'PRE')
+    .filter(m => m.status === 'SCHEDULED' || m.status === 'PRE' || m.status === 'PRE-GAME' || m.status === 'POST')
     .sort((a, b) => {
       // LIVE games first, then by date
       if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
