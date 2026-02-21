@@ -1,0 +1,5 @@
+[providers]
+  node = "nodejs_20"
+
+[phases.setup]
+  apt = ["python3"]
