@@ -13,10 +13,10 @@ interface Match {
   isHome?: boolean
 }
 
-const API_KEY = process.env.FOOTBALL_DATA_API_KEY || ''
+const FOOTBALL_DATA_KEY = process.env.FOOTBALL_DATA_API_KEY || ''
 
-// Team configurations with logos
-const TEAMS: Record<string, { name: string; logo: string; isHome?: (team: string) => boolean }> = {
+// Team configurations
+const TEAMS: Record<string, { name: string; logo: string }> = {
   'Chelsea': { name: 'Chelsea', logo: '🔵' },
   'PSG': { name: 'Paris SG', logo: '🔴🔵' },
   'Monaco': { name: 'Monaco', logo: '🔴' },
@@ -28,85 +28,218 @@ const TEAMS: Record<string, { name: string; logo: string; isHome?: (team: string
   'Wycombe': { name: 'Wycombe', logo: '🟡' },
 }
 
-// Competition IDs to fetch
-const COMPETITIONS = {
-  premier: 2021,   // Premier League
-  faCup: 2024,      // FA Cup
-  champions: 2001,  // Champions League
-  leagueCup: 2013, // Carabao Cup
-  Ligue1: 2019,     // Ligue 1
-  leagueOne: 2016, // League One (Wrexham)
-}
+// ESPN League endpoints (primary - no API key)
+const ESPN_LEAGUES = [
+  { id: 'eng.1', name: 'Premier League', sport: 'soccer' },
+  { id: 'fra.1', name: 'Ligue 1', sport: 'soccer' },
+  { id: 'uefa.champions', name: 'Champions League', sport: 'soccer' },
+  { id: 'eng.2', name: 'Championship', sport: 'soccer' },
+  { id: 'usa.22', name: 'US League One', sport: 'soccer' },
+]
+
+const MBB_LEAGUE = { id: 'mens-college-basketball', name: 'NCAA Basketball' }
+
+// Teams we care about
+const INTERESTING_TEAMS = [
+  'Chelsea', 'PSG', 'Monaco', 'Wrexham', 'Burnley', 'Wycombe',
+  'Kentucky', 'Georgia', 'Auburn', 'Liverpool', 'Arsenal', 'Manchester City',
+  'Leeds', 'Sunderland', 'Tottenham', 'Newcastle', 'Florida', 'Tennessee'
+]
 
 export async function GET() {
-  // If no API key, return local schedule
-  if (!API_KEY) {
-    return NextResponse.json(getLocalSchedule())
-  }
-
   try {
-    const today = new Date().toISOString().split('T')[0]
-    const twoWeeksLater = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const matches: any[] = []
-
-    // Fetch from all competitions in parallel
-    const results = await Promise.allSettled([
-      axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.premier}/matches`, {
-        headers: { 'X-Auth-Token': API_KEY },
-        params: { dateFrom: today, dateTo: twoWeeksLater },
-      }),
-      axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.faCup}/matches`, {
-        headers: { 'X-Auth-Token': API_KEY },
-        params: { dateFrom: today, dateTo: twoWeeksLater },
-      }),
-      axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.champions}/matches`, {
-        headers: { 'X-Auth-Token': API_KEY },
-        params: { dateFrom: today, dateTo: twoWeeksLater },
-      }),
-      axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.leagueOne}/matches`, {
-        headers: { 'X-Auth-Token': API_KEY },
-        params: { dateFrom: today, dateTo: twoWeeksLater },
-      }),
-    ])
-
-    // Process all matches - filter to teams we care about
-    const teamIds = [15, 524, 1012, 2624] // Chelsea, PSG, Wrexham, Kentucky (NCAA)
-    
-    results.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        const compMatches = result.value.data.matches || []
-        compMatches.forEach((m: any) => {
-          if (teamIds.includes(m.homeTeam.id) || teamIds.includes(m.awayTeam.id)) {
-            matches.push({
-              id: m.id,
-              homeTeam: m.homeTeam.shortName,
-              awayTeam: m.awayTeam.shortName,
-              homeScore: m.score.fullTime.home ?? null,
-              awayScore: m.score.fullTime.away ?? null,
-              status: m.status,
-              date: m.utcDate,
-              league: m.competition.name,
-              isHome: true, // API doesn't easily tell us, default to home for now
-            })
-          }
-        })
-      }
-    })
-
-    return NextResponse.json(matches.length > 0 ? matches : getLocalSchedule())
+    // Try ESPN first (primary - no API key)
+    const espnData = await fetchESPNData()
+    if (espnData && espnData.length > 0) {
+      return NextResponse.json(espnData)
+    }
   } catch (error) {
-    console.error('Sports API error:', error)
-    return NextResponse.json(getLocalSchedule())
+    console.error('ESPN fetch failed:', error)
   }
+
+  // Fallback: football-data.org
+  if (FOOTBALL_DATA_KEY) {
+    try {
+      const footballData = await fetchFootballData(FOOTBALL_DATA_KEY)
+      if (footballData && footballData.length > 0) {
+        return NextResponse.json(footballData)
+      }
+    } catch (error) {
+      console.error('Football-data.org fetch failed:', error)
+    }
+  }
+
+  // Final fallback: local schedule
+  return NextResponse.json(getLocalSchedule())
+}
+
+async function fetchESPNData(): Promise<Match[]> {
+  const matches: Match[] = []
+  const today = new Date()
+  
+  // Get yesterday and today for scores
+  const dates = [
+    formatESPNDate(new Date(today.getTime() - 24 * 60 * 60 * 1000)),
+    formatESPNDate(today),
+  ]
+
+  // Fetch soccer leagues
+  for (const league of ESPN_LEAGUES) {
+    for (const date of dates) {
+      try {
+        const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/scoreboard?dates=${date}`
+        const response = await axios.get(url, { timeout: 5000 })
+        const events = response.data?.events || []
+        
+        events.forEach((event: any) => {
+          const competitors = event.competitions?.[0]?.competitors || []
+          const home = competitors.find((c: any) => c.homeAway === 'home')
+          const away = competitors.find((c: any) => c.homeAway === 'away')
+          
+          if (!home || !away) return
+          
+          const homeTeam = home.team?.shortDisplayName || home.team?.name
+          const awayTeam = away.team?.shortDisplayName || away.team?.name
+          
+          // Check if interesting team
+          if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))) {
+            return
+          }
+          
+          const status = event.status?.type?.state || 'SCHEDULED'
+          const isFinished = event.status?.type?.completed === true || status === 'post' || status === 'final'
+          
+          matches.push({
+            id: parseInt(event.id) || Math.random() * 100000,
+            homeTeam,
+            awayTeam,
+            homeScore: home.score ? parseInt(home.score) : null,
+            awayScore: away.score ? parseInt(away.score) : null,
+            status: isFinished ? 'FINISHED' : status.toUpperCase(),
+            date: event.date,
+            league: event.competitions?.[0]?.league?.name || league.name,
+            isHome: true,
+          })
+        })
+      } catch (error) {
+        // Continue to next
+      }
+    }
+  }
+
+  // Fetch college basketball
+  for (const date of dates) {
+    try {
+      const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/${MBB_LEAGUE.id}/scoreboard?dates=${date}`
+      const response = await axios.get(url, { timeout: 5000 })
+      const events = response.data?.events || []
+      
+      events.forEach((event: any) => {
+        const competitors = event.competitions?.[0]?.competitors || []
+        const home = competitors.find((c: any) => c.homeAway === 'home')
+        const away = competitors.find((c: any) => c.homeAway === 'away')
+        
+        if (!home || !away) return
+        
+        const homeTeam = home.team?.shortDisplayName || home.team?.name
+        const awayTeam = away.team?.shortDisplayName || away.team?.name
+        
+        // Check for Kentucky or other teams we care about
+        if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))) {
+          return
+        }
+        
+        const status = event.status?.type?.state || 'SCHEDULED'
+        const isFinished = event.status?.type?.completed === true || status === 'post' || status === 'final'
+        
+        matches.push({
+          id: parseInt(event.id) || Math.random() * 100000,
+          homeTeam,
+          awayTeam,
+          homeScore: home.score ? parseInt(home.score) : null,
+          awayScore: away.score ? parseInt(away.score) : null,
+          status: isFinished ? 'FINISHED' : status.toUpperCase(),
+          date: event.date,
+          league: MBB_LEAGUE.name,
+          isHome: true,
+        })
+      })
+    } catch (error) {
+      // Continue
+    }
+  }
+
+  return matches
+}
+
+async function fetchFootballData(apiKey: string): Promise<Match[]> {
+  const matches: Match[] = []
+  const today = new Date().toISOString().split('T')[0]
+  const twoWeeksLater = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  
+  const COMPETITIONS = {
+    premier: 2021,
+    faCup: 2024,
+    champions: 2001,
+    leagueOne: 2016,
+  }
+
+  const teamIds = [15, 524, 1012, 2624]
+
+  const results = await Promise.allSettled([
+    axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.premier}/matches`, {
+      headers: { 'X-Auth-Token': apiKey },
+      params: { dateFrom: today, dateTo: twoWeeksLater },
+    }),
+    axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.faCup}/matches`, {
+      headers: { 'X-Auth-Token': apiKey },
+      params: { dateFrom: today, dateTo: twoWeeksLater },
+    }),
+    axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.champions}/matches`, {
+      headers: { 'X-Auth-Token': apiKey },
+      params: { dateFrom: today, dateTo: twoWeeksLater },
+    }),
+    axios.get(`https://api.football-data.org/v4/competitions/${COMPETITIONS.leagueOne}/matches`, {
+      headers: { 'X-Auth-Token': apiKey },
+      params: { dateFrom: today, dateTo: twoWeeksLater },
+    }),
+  ])
+
+  results.forEach((result) => {
+    if (result.status === 'fulfilled') {
+      const compMatches = result.value.data.matches || []
+      compMatches.forEach((m: any) => {
+        if (teamIds.includes(m.homeTeam.id) || teamIds.includes(m.awayTeam.id)) {
+          matches.push({
+            id: m.id,
+            homeTeam: m.homeTeam.shortName,
+            awayTeam: m.awayTeam.shortName,
+            homeScore: m.score.fullTime.home ?? null,
+            awayScore: m.score.fullTime.away ?? null,
+            status: m.status,
+            date: m.utcDate,
+            league: m.competition.name,
+            isHome: true,
+          })
+        }
+      })
+    }
+  })
+
+  return matches
+}
+
+function formatESPNDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}${month}${day}`
 }
 
 function getLocalSchedule() {
-  // Dynamic schedule - generates upcoming matches based on current date
-  // Also includes FINISHED games for Latest Scores widget testing
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   
-  // Generate dates dynamically
   const getDate = (daysOffset: number, hour: number = 15, minute: number = 0) => {
     const d = new Date(now)
     d.setDate(d.getDate() + daysOffset)
@@ -114,7 +247,6 @@ function getLocalSchedule() {
     return d.toISOString()
   }
 
-  // Get past date for FINISHED games
   const getPastDate = (daysAgo: number, hour: number = 15, minute: number = 0) => {
     const d = new Date(now)
     d.setDate(d.getDate() - daysAgo)
@@ -122,43 +254,37 @@ function getLocalSchedule() {
     return d.toISOString()
   }
 
-  // UK Wildcats Basketball (SEC) - typically Wed/Sat
   const kentuckyGames = [
-    { opponent: 'Georgia', days: 1, time: [21, 0] },    // Tomorrow (tonight)
-    { opponent: 'Auburn', days: 4, time: [21, 0] },       // Sat
-    { opponent: 'Florida', days: 6, time: [19, 0] },   // Mon
+    { opponent: 'Georgia', days: 1, time: [21, 0] },
+    { opponent: 'Auburn', days: 4, time: [21, 0] },
+    { opponent: 'Florida', days: 6, time: [19, 0] },
   ]
 
-  // Chelsea - Premier League matches
   const chelseaGames = [
-    { opponent: 'Burnley', days: 4, time: [15, 0] },    // Sat
-    { opponent: 'Arsenal', days: 8, time: [11, 30] },   // Wed
+    { opponent: 'Burnley', days: 4, time: [15, 0] },
+    { opponent: 'Arsenal', days: 8, time: [11, 30] },
   ]
 
-  // PSG - Ligue 1
   const psgGames = [
-    { opponent: 'Monaco', days: 2, time: [20, 0] },     // Thu (Champions League)
-    { opponent: 'Lille', days: 5, time: [20, 0] },       // Sun
+    { opponent: 'Monaco', days: 2, time: [20, 0] },
+    { opponent: 'Lille', days: 5, time: [20, 0] },
   ]
 
-  // Wrexham - League One
   const wrexhamGames = [
-    { opponent: 'Bristol City', days: 1, time: [19, 45] }, // Tomorrow
-    { opponent: 'Wycombe', days: 5, time: [15, 0] },     // Sun
-    { opponent: 'Oxford', days: 9, time: [15, 0] },       // Thu
+    { opponent: 'Bristol City', days: 1, time: [19, 45] },
+    { opponent: 'Wycombe', days: 5, time: [15, 0] },
+    { opponent: 'Oxford', days: 9, time: [15, 0] },
   ]
 
   const schedule: Match[] = []
   let id = 1
   const currentTime = new Date()
 
-  // Helper to check if game is in the future
   const isFuture = (dateStr: string) => new Date(dateStr) > currentTime
 
-  // Add Kentucky games
   kentuckyGames.forEach(g => {
     const date = getDate(g.days, g.time[0], g.time[1])
-    if (!isFuture(date)) return // Skip past games
+    if (!isFuture(date)) return
     schedule.push({
       id: id++,
       homeTeam: 'Kentucky',
@@ -172,7 +298,6 @@ function getLocalSchedule() {
     })
   })
 
-  // Add Chelsea games
   chelseaGames.forEach(g => {
     const date = getDate(g.days, g.time[0], g.time[1])
     if (!isFuture(date)) return
@@ -189,7 +314,6 @@ function getLocalSchedule() {
     })
   })
 
-  // Add PSG games
   psgGames.forEach(g => {
     const date = getDate(g.days, g.time[0], g.time[1])
     if (!isFuture(date)) return
@@ -206,7 +330,6 @@ function getLocalSchedule() {
     })
   })
 
-  // Add Wrexham games
   wrexhamGames.forEach(g => {
     const date = getDate(g.days, g.time[0], g.time[1])
     if (!isFuture(date)) return
@@ -223,7 +346,6 @@ function getLocalSchedule() {
     })
   })
 
-  // Add FINISHED games for Latest Scores testing
   const finishedGames = [
     { home: 'Chelsea', away: 'Liverpool', homeScore: 2, awayScore: 1, daysAgo: 0, time: [15, 0], league: 'Premier League' },
     { home: 'PSG', away: 'Monaco', homeScore: 3, awayScore: 0, daysAgo: 0, time: [20, 0], league: 'Champions League' },
