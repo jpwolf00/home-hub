@@ -1,18 +1,22 @@
-name: Deploy to Dokploy
-
-on:
-  push:
-    branches: [master]
-
-jobs:
-  deploy:
-    runs-on: [self-hosted, dokploy]
-    steps:
-      - name: Trigger Dokploy deployment
-        run: |
-          RESPONSE=$(curl -s -X POST "http://192.168.85.205:3000/api/application.redeploy" \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: EVAqvQjfcENShqTtXJRXOhqckKfFyOuznNUyxqjGhPpnHOYihBpRoODwONiLufhw" \
-            -d '{"applicationId":"YYIBuxqgDc_5-tNObZp5F"}')
-          echo "Response: $RESPONSE"
-          echo "Deploy triggered for home-hub"
+# DEPRECATED: Dokploy deployment workflow
+# This workflow is no longer used. We now deploy manually via SSH to 192.168.85.205.
+# See deployment instructions in README.md or ask the team for current process.
+#
+# name: Deploy to Dokploy
+#
+# on:
+#   push:
+#     branches: [master]
+#
+# jobs:
+#   deploy:
+#     runs-on: [self-hosted, dokploy]
+#     steps:
+#       - name: Trigger Dokploy deployment
+#         run: |
+#           RESPONSE=$(curl -s -X POST "http://192.168.85.205:3000/api/application.redeploy" \
+#             -H "Content-Type: application/json" \
+#             -H "x-api-key: EVAqvQjfcENShqTtXJRXOhqckKfFyOuznNUyxqjGhPpnHOYihBpRoODwONiLufhw" \
+#             -d '{"applicationId":"YYIBuxqgDc_5-tNObZp5F"}')
+#           echo "Response: $RESPONSE"
+#           echo "Deploy triggered for home-hub"
