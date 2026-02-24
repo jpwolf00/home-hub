@@ -22,8 +22,6 @@ const TEAMS: Record<string, { name: string; logo: string }> = {
   'Monaco': { name: 'Monaco', logo: '🔴' },
   'Wrexham': { name: 'Wrexham', logo: '🐉' },
   'Kentucky': { name: 'Kentucky', logo: '🔵' },
-  'Georgia': { name: 'Georgia', logo: '🔴' },
-  'Auburn': { name: 'Auburn', logo: '🟠' },
   'Burnley': { name: 'Burnley', logo: '🟣' },
   'Wycombe': { name: 'Wycombe', logo: '🟡' },
 }
@@ -41,8 +39,8 @@ const MBB_LEAGUE = { id: 'mens-college-basketball', name: 'NCAA Basketball' }
 
 // Teams we care about
 const INTERESTING_TEAMS = [
-  'Chelsea', 'PSG', 'Wrexham',
-  'USA', 'United States',
+  'Chelsea', 'Paris SG', 'PSG', 'Wrexham',
+  'USA', 'United States', 'USMNT', 'USA Women', 'USWNT',
   'Kentucky',
 ]
 
@@ -77,11 +75,15 @@ async function fetchESPNData(): Promise<Match[]> {
   const matches: Match[] = []
   const today = new Date()
   
-  // Get yesterday and today for scores
-  const dates = [
-    formatESPNDate(new Date(today.getTime() - 24 * 60 * 60 * 1000)),
-    formatESPNDate(today),
-  ]
+  // Get past 7 days and next 7 days for comprehensive game list
+  const dates: string[] = []
+  for (let i = 7; i >= 1; i--) {
+    dates.push(formatESPNDate(new Date(today.getTime() - i * 24 * 60 * 60 * 1000)))
+  }
+  dates.push(formatESPNDate(today)) // today
+  for (let i = 1; i <= 7; i++) {
+    dates.push(formatESPNDate(new Date(today.getTime() + i * 24 * 60 * 60 * 1000)))
+  }
 
   // Fetch soccer leagues
   for (const league of ESPN_LEAGUES) {
@@ -101,13 +103,20 @@ async function fetchESPNData(): Promise<Match[]> {
           const homeTeam = home.team?.shortDisplayName || home.team?.name
           const awayTeam = away.team?.shortDisplayName || away.team?.name
           
+          // Skip Louisville - not our team
+          if (homeTeam === 'Louisville' || awayTeam === 'Louisville') {
+            return
+          }
+          
           // Check if interesting team
-          if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t)) || homeTeam === 'Louisville' || awayTeam === 'Louisville') {
+          const isInteresting = INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))
+          if (!isInteresting) {
             return
           }
           
           const status = event.status?.type?.state || 'SCHEDULED'
           const isFinished = event.status?.type?.completed === true || status === 'post' || status === 'final'
+          const isLive = status === 'in' || status === 'live'
           
           matches.push({
             id: parseInt(event.id) || Math.random() * 100000,
@@ -115,7 +124,7 @@ async function fetchESPNData(): Promise<Match[]> {
             awayTeam,
             homeScore: home.score ? parseInt(home.score) : null,
             awayScore: away.score ? parseInt(away.score) : null,
-            status: isFinished ? 'FINISHED' : status.toUpperCase(),
+            status: isFinished ? 'FINISHED' : isLive ? 'LIVE' : status.toUpperCase(),
             date: event.date,
             league: event.competitions?.[0]?.league?.name || league.name,
             isHome: true,
@@ -144,13 +153,20 @@ async function fetchESPNData(): Promise<Match[]> {
         const homeTeam = home.team?.shortDisplayName || home.team?.name
         const awayTeam = away.team?.shortDisplayName || away.team?.name
         
+        // Skip Louisville - not our team
+        if (homeTeam === 'Louisville' || awayTeam === 'Louisville') {
+          return
+        }
+        
         // Check for Kentucky or other teams we care about
-        if (!INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t)) || homeTeam === 'Louisville' || awayTeam === 'Louisville') {
+        const isInteresting = INTERESTING_TEAMS.some(t => homeTeam?.includes(t) || awayTeam?.includes(t))
+        if (!isInteresting) {
           return
         }
         
         const status = event.status?.type?.state || 'SCHEDULED'
         const isFinished = event.status?.type?.completed === true || status === 'post' || status === 'final'
+        const isLive = status === 'in' || status === 'live'
         
         matches.push({
           id: parseInt(event.id) || Math.random() * 100000,
@@ -158,7 +174,7 @@ async function fetchESPNData(): Promise<Match[]> {
           awayTeam,
           homeScore: home.score ? parseInt(home.score) : null,
           awayScore: away.score ? parseInt(away.score) : null,
-          status: isFinished ? 'FINISHED' : status.toUpperCase(),
+          status: isFinished ? 'FINISHED' : isLive ? 'LIVE' : status.toUpperCase(),
           date: event.date,
           league: MBB_LEAGUE.name,
           isHome: true,
@@ -169,7 +185,33 @@ async function fetchESPNData(): Promise<Match[]> {
     }
   }
 
-  return matches
+  // After collecting all matches, filter and limit
+  const filteredMatches = matches.filter(m => {
+    // Exclude Georgia and Auburn explicitly
+    const isExcluded = m.homeTeam === 'Georgia' || m.awayTeam === 'Georgia' ||
+                       m.homeTeam === 'Auburn' || m.awayTeam === 'Auburn';
+    return !isExcluded;
+  });
+
+  // Split into upcoming and finished
+  const upcoming = filteredMatches
+    .filter(m => m.status !== 'FINISHED' && m.status !== 'post' && m.status !== 'final')
+    .sort((a, b) => {
+      // LIVE games first, then by date
+      const aLive = a.status === 'LIVE' || a.status === 'IN';
+      const bLive = b.status === 'LIVE' || b.status === 'IN';
+      if (aLive && !bLive) return -1;
+      if (!aLive && bLive) return 1;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    })
+    .slice(0, 7);
+
+  const finished = filteredMatches
+    .filter(m => m.status === 'FINISHED' || m.status === 'post' || m.status === 'final')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 7);
+
+  return [...upcoming, ...finished]
 }
 
 async function fetchFootballData(apiKey: string): Promise<Match[]> {
@@ -255,8 +297,6 @@ function getLocalSchedule() {
   }
 
   const kentuckyGames = [
-    { opponent: 'Georgia', days: 1, time: [21, 0] },
-    { opponent: 'Auburn', days: 4, time: [21, 0] },
     { opponent: 'Florida', days: 6, time: [19, 0] },
   ]
 
@@ -351,9 +391,6 @@ function getLocalSchedule() {
     { home: 'PSG', away: 'Monaco', homeScore: 3, awayScore: 0, daysAgo: 0, time: [20, 0], league: 'Champions League' },
     { home: 'Kentucky', away: 'Tennessee', homeScore: 78, awayScore: 65, daysAgo: 1, time: [19, 0], league: 'NCAA Basketball' },
     { home: 'Wrexham', away: 'Bristol City', homeScore: 1, awayScore: 1, daysAgo: 1, time: [15, 0], league: 'League One' },
-    { home: 'Arsenal', away: 'Newcastle', homeScore: 2, awayScore: 0, daysAgo: 2, time: [16, 0], league: 'Premier League' },
-    { home: 'Manchester City', away: 'Tottenham', homeScore: 4, awayScore: 2, daysAgo: 2, time: [12, 30], league: 'Premier League' },
-    { home: 'Sheffield United', away: 'Sunderland', homeScore: 2, awayScore: 0, daysAgo: 3, time: [15, 0], league: 'Championship' },
   ]
 
   finishedGames.forEach(g => {

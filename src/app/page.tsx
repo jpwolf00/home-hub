@@ -1,10 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import FrenchWidget from '@/components/widgets/FrenchWidget';
 import FrenchNewsWidget from '@/components/widgets/FrenchNewsWidget';
-import { frenchVocabulary, frenchVerbs } from '@/lib/french-data';
+
+// Low Power Mode detection
+const LOW_POWER = process.env.NEXT_PUBLIC_LOW_POWER === 'true';
+
+// Pi mode detection (Raspberry Pi or low-power device)
+const isPiMode = () => {
+  if (typeof navigator === 'undefined') return false;
+  const userAgent = navigator.userAgent.toLowerCase();
+  return userAgent.includes('linux') && (userAgent.includes('arm') || userAgent.includes('aarch64'));
+};
 
 // Color tokens from spec
 const COLORS = {
@@ -72,7 +80,7 @@ function HeaderStocksWidget() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
+    const interval = setInterval(fetchData, LOW_POWER ? 10 * 60 * 1000 : 5 * 60 * 1000); // Refresh every 5-10 minutes
     return () => clearInterval(interval);
   }, []);
 
@@ -110,7 +118,7 @@ function WeatherWidget() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10 * 60 * 1000); // Refresh every 10 minutes
+    const interval = setInterval(fetchData, LOW_POWER ? 20 * 60 * 1000 : 10 * 60 * 1000); // Refresh every 10-20 minutes
     return () => clearInterval(interval);
   }, []);
 
@@ -141,8 +149,8 @@ function WeatherWidget() {
 
       {/* 7-day forecast */}
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="flex gap-8">
-          {weather.forecast.slice(0, 7).map((day: any, i: number) => (
+        <div className="flex gap-4">
+          {weather.forecast.slice(0, 5).map((day: any, i: number) => (
             <div key={i} className="flex flex-col items-center gap-2 min-w-[70px]">
               <div className="text-lg text-white/50">{day.day}</div>
               <div className="text-3xl">{iconMap[day.icon] || '🌡️'}</div>
@@ -155,214 +163,6 @@ function WeatherWidget() {
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-// French Column - Full column with all French learning content
-function FrenchColumn() {
-  const [parisTime, setParisTime] = useState('');
-  const [parisWeather, setParisWeather] = useState<any>(null);
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [conjugationIndex, setConjugationIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  // Paris countdown
-  const PARIS_TRIP = new Date('2026-05-09T00:00:00-04:00');
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
-
-  // French vocabulary - 200+ words imported from lib
-  const FRENCH_PHRASES = frenchVocabulary;
-
-  // Verb conjugations
-  // Verb conjugations
-  const VERB_CONJUGATIONS = [
-    { verb: 'être (to be)', present: 'je suis, tu es, il/elle est, nous sommes, vous êtes, ils/elles sont', english: 'to be' },
-    { verb: 'avoir (to have)', present: 'j\'ai, tu as, il/elle a, nous avons, vous avez, ils/elles ont', english: 'to have' },
-    { verb: 'aller (to go)', present: 'je vais, tu vas, il/elle va, nous allons, vous allez, ils/elles vont', english: 'to go' },
-    { verb: 'faire (to do/make)', present: 'je fais, tu fais, il/elle fait, nous faisons, vous faites, ils/elles font', english: 'to do / to make' },
-    { verb: 'venir (to come)', present: 'je viens, tu viens, il/elle vient, nous venons, vous venez, ils/elles viennent', english: 'to come' },
-    { verb: 'voir (to see)', present: 'je vois, tu vois, il/elle voit, nous voyons, vous voyez, ils/elles voient', english: 'to see' },
-    { verb: 'savoir (to know)', present: 'je sais, tu sais, il/elle sait, nous savons, vous savez, ils/elles savent', english: 'to know (facts)' },
-    { verb: 'connaître (to know)', present: 'je connais, tu connais, il/elle connaît, nous connaissons, vous connaissez, ils/elles connaissent', english: 'to know (people)' },
-    { verb: 'vouloir (to want)', present: 'je veux, tu veux, il/elle veut, nous voulons, vous voulez, ils/elles veulent', english: 'to want' },
-    { verb: 'pouvoir (to can/may)', present: 'je peux, tu peux, il/elle peut, nous pouvons, vous pouvez, ils/elles peuvent', english: 'to be able to' },
-    { verb: 'devoir (must/have to)', present: 'je dois, tu dois, il/elle doit, nous devons, vous devez, ils/elles doivent', english: 'must / to have to' },
-    { verb: 'dire (to say/tell)', present: 'je dis, tu dis, il/elle dit, nous disons, vous dites, ils/elles disent', english: 'to say / to tell' },
-    { verb: 'parler (to speak)', present: 'je parle, tu parles, il/elle parle, nous parlons, vous parlez, ils/elles parlent', english: 'to speak' },
-    { verb: 'manger (to eat)', present: 'je mange, tu manges, il/elle mange, nous mangeons, vous mangez, ils/elles mangent', english: 'to eat' },
-    { verb: 'boire (to drink)', present: 'je bois, tu bois, il/elle boit, nous buvons, vous buvez, ils/elles boivent', english: 'to drink' },
-    { verb: 'prendre (to take)', present: 'je prends, tu prends, il/elle prend, nous prenons, vous prenez, ils/elles prennent', english: 'to take' },
-    { verb: 'venir (to come)', present: 'je viens, tu viens, il/elle vient, nous venons, vous venez, ils/elles viennent', english: 'to come' },
-    { verb: 'partir (to leave)', present: 'je pars, tu pars, il/elle part, nous partons, vous partez, ils/elles partir', english: 'to leave / to depart' },
-    { verb: 'arriver (to arrive)', present: "j'arrive, tu arrives, il/elle arrive, nous arrivons, vous arrivez, ils/elles arrivent", english: 'to arrive' },
-    { verb: 'rester (to stay)', present: 'je reste, tu reste, il/elle reste, nous restons, vous restez, ils/elles restent', english: 'to stay / to remain' },
-  ];
-
-  useEffect(() => {
-    setMounted(true);
-
-    // Paris time
-    const updateParisTime = () => {
-      const now = new Date();
-      const parisTime = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
-      setParisTime(parisTime);
-    };
-    updateParisTime();
-    const parisInterval = setInterval(updateParisTime, 1000);
-
-    // Paris weather - refresh every 10 minutes
-    const fetchParisWeather = () => {
-      fetch('/api/paris-weather')
-        .then(r => r.json())
-        .then(setParisWeather)
-        .catch((e) => console.error('Sports fetch error:', e));
-    };
-    fetchParisWeather();
-    const parisWeatherInterval = setInterval(fetchParisWeather, 10 * 60 * 1000);
-
-    // Update countdown
-    const updateCountdown = () => {
-      const now = new Date();
-      const diff = PARIS_TRIP.getTime() - now.getTime();
-      if (diff > 0) {
-        setCountdown({
-          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-        });
-      }
-    };
-    updateCountdown();
-    const countdownInterval = setInterval(updateCountdown, 60000);
-
-    // Rotate phrases every 60 seconds
-    const phraseInterval = setInterval(() => {
-      setPhraseIndex((prev) => (prev + 1) % FRENCH_PHRASES.length);
-    }, 60000);
-
-    // Rotate conjugations every hour (check minute to sync)
-    const conjugationInterval = setInterval(() => {
-      const now = new Date();
-      if (now.getMinutes() === 0) {
-        setConjugationIndex((prev) => (prev + 1) % VERB_CONJUGATIONS.length);
-      }
-    }, 60000);
-
-    return () => {
-      clearInterval(parisInterval);
-      clearInterval(parisWeatherInterval);
-      clearInterval(countdownInterval);
-      clearInterval(phraseInterval);
-      clearInterval(conjugationInterval);
-    };
-  }, []);
-
-  const iconMap: Record<string, string> = {
-    '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
-    '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
-    '09d': '🌧️', '09n': '🌧️', '10d': '🌧️', '10n': '🌧️',
-    '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️',
-    '50d': '🌫️', '50n': '🌫️',
-  };
-
-  const currentPhrase = FRENCH_PHRASES[phraseIndex];
-  const currentVerb = VERB_CONJUGATIONS[conjugationIndex];
-
-  return (
-    <div className="flex flex-col gap-8 h-full min-h-0">
-      {/* Paris Trip Countdown */}
-      <div className="bg-[#2B2930] rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">✈️</span>
-          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris Trip</h3>
-        </div>
-        {mounted ? (
-          <div className="flex gap-8">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white">{countdown.days}</div>
-              <div className="text-lg text-white/50">Days</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white">{countdown.hours}</div>
-              <div className="text-lg text-white/50">Hours</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white">{countdown.minutes}</div>
-              <div className="text-lg text-white/50">Minutes</div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-2xl text-white/40">Loading...</div>
-        )}
-      </div>
-
-      {/* Paris Time & Weather */}
-      <div className="bg-[#2B2930] rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">🗼</span>
-          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">Paris</h3>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="text-4xl font-mono text-white">{parisTime || 'Loading...'}</div>
-          {parisWeather && (
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{iconMap[parisWeather.icon] || '🌡️'}</span>
-              <div className="text-right">
-                <div className="text-2xl text-white">{parisWeather.temp}°F</div>
-                <div className="text-sm text-white/60">{parisWeather.description}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* French Phrase with Pronunciation */}
-      <div className="bg-[#2B2930] rounded-2xl p-6 flex-1">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">🇫🇷</span>
-          <h3 className="text-xl font-medium text-white/70 uppercase tracking-wider">French</h3>
-        </div>
-        <div className="space-y-3">
-          <div className="text-5xl font-medium text-white">{currentPhrase.french}</div>
-          <div className="text-2xl text-primary-300 italic">{currentPhrase.pronunciation}</div>
-          <div className="text-xl text-white/60">{currentPhrase.english}</div>
-          <div className="text-sm text-white/30 mt-2">
-            {phraseIndex + 1} / {FRENCH_PHRASES.length}
-          </div>
-        </div>
-      </div>
-
-      {/* Verb Conjugation */}
-      <div className="bg-[#2B2930] rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-2xl">📝</span>
-          <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Verb Conjugation</h3>
-        </div>
-        <div className="space-y-2">
-          <div className="text-2xl font-medium text-white">{currentVerb.verb}</div>
-          <div className="text-lg text-primary-300">{currentVerb.present}</div>
-          <div className="text-md text-white/60">{currentVerb.english}</div>
-        </div>
-      </div>
-
-      {/* Question Words */}
-      <div className="bg-[#2B2930] rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-2xl">❓</span>
-          <h3 className="text-lg font-medium text-white/70 uppercase tracking-wider">Question Words</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><span className="text-primary-300">Qui?</span> <span className="text-white/50">- Who</span></div>
-          <div><span className="text-primary-300">Quoi?</span> <span className="text-white/50">- What</span></div>
-          <div><span className="text-primary-300">Oú?</span> <span className="text-white/50">- Where</span></div>
-          <div><span className="text-primary-300">Quand?</span> <span className="text-white/50">- When</span></div>
-          <div><span className="text-primary-300">Pourquoi?</span> <span className="text-white/50">- Why</span></div>
-          <div><span className="text-primary-300">Comment?</span> <span className="text-white/50">- How</span></div>
-          <div><span className="text-primary-300">Lequel?</span> <span className="text-white/50">- Which</span></div>
-          <div><span className="text-primary-300">Combien?</span> <span className="text-white/50">- How many</span></div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -455,7 +255,7 @@ function LatestScoresWidget() {
         const finished = data
           .filter((m: any) => m.status === 'FINISHED')
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(0, 5);
+          .slice(0, 6);
         setMatches(finished);
       })
       .catch((e) => console.error('Sports fetch error:', e));
@@ -617,16 +417,18 @@ function SportsColumn() {
 
   const getLogo = (team: string) => TEAM_LOGOS[team] || '';
 
-  // Sort by date and show next 5 games (include LIVE games)
+  // Sort by date and show next 5 games (include LIVE/IN games)
   const upcomingGames = matches
-    .filter(m => m.status !== 'FINISHED')
+    .filter(m => m.status !== 'FINISHED' && m.status !== 'post' && m.status !== 'final')
     .sort((a, b) => {
-      // LIVE games first, then by date
-      if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
-      if (b.status === 'LIVE' && a.status !== 'LIVE') return 1;
+      // LIVE/IN games first, then by date
+      const aLive = a.status === 'LIVE' || a.status === 'IN';
+      const bLive = b.status === 'LIVE' || b.status === 'IN';
+      if (aLive && !bLive) return -1;
+      if (!aLive && bLive) return 1;
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     })
-    .slice(0, 5);
+    .slice(0, 6);
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-6">
@@ -681,7 +483,7 @@ function SportsColumn() {
 // Tasks Column - LARGE
 function TasksColumn({ title, tasks, accentColor }: { title: string, tasks: any[], accentColor: string }) {
   return (
-    <div className="bg-[#2B2930] rounded-2xl p-8 h-full max-h-[850px] overflow-hidden">
+    <div className="bg-[#2B2930] rounded-2xl p-8 flex-1 overflow-hidden">
       <h3 className="text-3xl font-medium mb-4 uppercase tracking-wider flex items-center gap-4">
         <span style={{ color: accentColor, fontSize: '2rem' }}>●</span>
         {title}
@@ -789,18 +591,14 @@ function HomeNetworkWidget() {
 function NewsColumn() {
   return (
     <div className="flex flex-col h-full min-h-0 gap-6">
-      {/* Top Stories - 50% height */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full min-h-0">
-          <TopStoriesWidget expanded />
-        </div>
+      {/* Top Stories - 60% */}
+      <div className="flex-[3] min-h-0 overflow-hidden">
+        <TopStoriesWidget expanded />
       </div>
 
-      {/* French News - 50% height */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full min-h-0">
-          <FrenchNewsWidget />
-        </div>
+      {/* French News - 40% */}
+      <div className="flex-[2] min-h-0 overflow-hidden">
+        <FrenchNewsWidget />
       </div>
     </div>
   );
@@ -825,7 +623,7 @@ function NewsTicker() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
+    const interval = setInterval(fetchData, LOW_POWER ? 10 * 60 * 1000 : 5 * 60 * 1000); // Refresh every 5-10 minutes
     return () => clearInterval(interval);
   }, []);
 
@@ -839,6 +637,18 @@ function NewsTicker() {
 
   const text = news.join('  •  ');
 
+  if (LOW_POWER) {
+    // Static ticker for low power mode
+    return (
+      <div className="bg-[#2A1212] border-t-2 border-red-500/30 h-16 px-8 flex items-center overflow-hidden">
+        <div className="text-lg text-white/80 truncate">
+          {text}
+        </div>
+      </div>
+    );
+  }
+
+  // Animated ticker for normal mode
   return (
     <div className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-16 px-8 flex items-center overflow-hidden ticker">
       <div className="ticker-track">
@@ -916,19 +726,23 @@ export default function Dashboard() {
       style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
       {/* Header - LARGE */}
-      <header className="flex-none flex items-center justify-between px-8 py-6 border-b-2" style={{ borderColor: 'var(--outline)' }}>
-        <div className="flex items-baseline gap-12">
+      <header className="flex-none grid grid-cols-4 items-center px-8 py-6 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+        <div className="flex justify-start">
           <DateDisplay />
+        </div>
+        <div className="flex justify-center">
           <Clock />
         </div>
-        <div className="flex items-center gap-12">
+        <div className="flex justify-center">
           <HeaderStocksWidget />
+        </div>
+        <div className="flex justify-end">
           <WeatherWidget />
         </div>
       </header>
 
       {/* Main Grid - 4 Columns */}
-      <main className="flex-1 overflow-hidden grid gap-6 p-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <main className="flex-1 overflow-hidden grid gap-6 px-8 pt-8 pb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {/* Column 1: Sports + Latest Scores */}
         <section className="h-full min-h-0">
           <SportsColumn />
@@ -950,7 +764,7 @@ export default function Dashboard() {
 
         {/* Column 3: French */}
         <section className="h-full min-h-0">
-          <FrenchColumn />
+          <FrenchWidget />
         </section>
 
         {/* Column 4: News - Top Stories + French News */}
