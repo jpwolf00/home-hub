@@ -43,6 +43,8 @@ export default function NewsTicker() {
     if (news.length <= 1 || isPaused) return;
     
     const interval = setInterval(() => {
+      // Guard against empty news (defensive fix for division by zero)
+      if (news.length === 0) return;
       setCurrentIndex((prev) => (prev + 1) % news.length);
     }, 8000);
 

@@ -192,14 +192,18 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
   useEffect(() => {
     if (stories.length <= itemCount) return;
     const interval = setInterval(() => {
+      // Guard against empty stories (defensive fix for division by zero)
+      if (stories.length === 0) return;
       setStart((s) => (s + 1) % stories.length);
     }, 45_000); // rotate every 45 seconds
     return () => clearInterval(interval);
   }, [stories.length, itemCount]);
 
-  const visible = stories.length <= itemCount
-    ? stories
-    : Array.from({ length: itemCount }).map((_, idx) => stories[(start + idx) % stories.length]);
+  const visible = stories.length === 0
+    ? []
+    : stories.length <= itemCount
+      ? stories
+      : Array.from({ length: itemCount }).map((_, idx) => stories[(start + idx) % stories.length]);
 
   const tagColor = (cat: string) => {
     if (cat === 'security') return 'bg-red-500/20 text-red-200 border-red-500/30';
@@ -301,21 +305,21 @@ function LatestScoresWidget() {
             return (
             <div key={m.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-white/50">{m.league}</span>
-                <span className="text-sm text-white/40">{formatDate(m.date)} • {getRelativeDate(m.date)}</span>
+                <span className="text-base text-white/50">{m.league}</span>
+                <span className="text-base text-white/40">{formatDate(m.date)} • {getRelativeDate(m.date)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-5 h-5 object-contain" />}
-                  <span className="text-lg font-medium">{m.homeTeam}</span>
+                  <span className="text-xl font-medium">{m.homeTeam}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-green-400">{m.homeScore}</span>
-                  <span className="text-lg text-white/50">-</span>
-                  <span className="text-xl font-bold text-green-400">{m.awayScore}</span>
+                  <span className="text-2xl font-bold text-green-400">{m.homeScore}</span>
+                  <span className="text-xl text-white/50">-</span>
+                  <span className="text-2xl font-bold text-green-400">{m.awayScore}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-medium">{m.awayTeam}</span>
+                  <span className="text-xl font-medium">{m.awayTeam}</span>
                   {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-5 h-5 object-contain" />}
                 </div>
               </div>
@@ -442,7 +446,7 @@ function SportsColumn() {
               const awayLogo = getLogo(m.awayTeam);
               return (
               <div key={m.id} className="bg-white/5 rounded-lg p-3">
-                <div className="flex items-center justify-center gap-4 text-lg text-white/50 mb-2">
+                <div className="flex items-center justify-center gap-4 text-xl text-white/50 mb-2">
                   <span>{formatDate(m.date)}</span>
                   <span>•</span>
                   <span>{formatTime(m.date)}</span>
@@ -450,12 +454,12 @@ function SportsColumn() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {homeLogo && <img src={homeLogo} alt={m.homeTeam} className="w-6 h-6 object-contain" />}
-                    <span className="text-lg font-medium">{m.homeTeam}</span>
+                    <span className="text-2xl font-medium">{m.homeTeam}</span>
                     {m.isHome === true && <span className="text-[10px] bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded">HOME</span>}
                   </div>
-                  <span className="text-lg text-white/50">vs</span>
+                  <span className="text-xl text-white/50">vs</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-medium">{m.awayTeam}</span>
+                    <span className="text-2xl font-medium">{m.awayTeam}</span>
                     {awayLogo && <img src={awayLogo} alt={m.awayTeam} className="w-6 h-6 object-contain" />}
                     {m.isHome === false && <span className="text-[10px] bg-yellow-500/30 text-yellow-300 px-1.5 py-0.5 rounded">AWAY</span>}
                   </div>
@@ -591,13 +595,13 @@ function HomeNetworkWidget() {
 function NewsColumn() {
   return (
     <div className="flex flex-col h-full min-h-0 gap-6">
-      {/* Top Stories - 60% */}
-      <div className="flex-[3] min-h-0 overflow-hidden">
+      {/* Top Stories - 50% */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <TopStoriesWidget expanded />
       </div>
 
-      {/* French News - 40% */}
-      <div className="flex-[2] min-h-0 overflow-hidden">
+      {/* French News - 50% */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <FrenchNewsWidget />
       </div>
     </div>
