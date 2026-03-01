@@ -44,7 +44,6 @@ services:
       - APPLE_REMINDERS_WEBHOOK=${APPLE_REMINDERS_WEBHOOK}
       - FOOTBALL_DATA_API_KEY=${FOOTBALL_DATA_API_KEY}
       - NEXT_PUBLIC_DASHBOARD_VARIANT=1080p
-      - NEXT_PUBLIC_LOW_POWER=true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
