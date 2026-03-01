@@ -15,6 +15,7 @@ services:
       - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
       - APPLE_REMINDERS_WEBHOOK=${APPLE_REMINDERS_WEBHOOK}
       - FOOTBALL_DATA_API_KEY=${FOOTBALL_DATA_API_KEY}
+      - NEXT_PUBLIC_DASHBOARD_VARIANT=4k
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
@@ -27,6 +28,31 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.homehub.rule=Host(`homehub.local.yourdomain.com`)"
       - "traefik.http.routers.homehub.entrypoints=web"
+
+  home-hub-1080:
+    build: .
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - UNRAID_URL=${UNRAID_URL}
+      - UNRAID_API_KEY=${UNRAID_API_KEY}
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
+      - APPLE_REMINDERS_WEBHOOK=${APPLE_REMINDERS_WEBHOOK}
+      - FOOTBALL_DATA_API_KEY=${FOOTBALL_DATA_API_KEY}
+      - NEXT_PUBLIC_DASHBOARD_VARIANT=1080p
+      - NEXT_PUBLIC_LOW_POWER=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - traefik-public
 
 networks:
   traefik-public:

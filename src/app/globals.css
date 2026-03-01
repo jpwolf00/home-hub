@@ -147,10 +147,10 @@ body {
 
 @keyframes ticker-marquee {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
@@ -160,6 +160,9 @@ body {
   width: max-content;
   animation: ticker-marquee 60s linear infinite;
   will-change: transform;
+  /* GPU acceleration hints */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .ticker:hover .ticker-track {
@@ -182,6 +185,19 @@ body {
     animation: none;
     transform: translateX(0) !important;
   }
+}
+
+/* 1080p profile: keep same layout/content with smaller visual scale */
+.dashboard-1080 {
+  font-size: 75%;
+}
+
+.dashboard-1080 .ticker-text {
+  font-size: 2rem;
+}
+
+.dashboard-1080 .news-ticker {
+  height: 3rem;
 }
 
 

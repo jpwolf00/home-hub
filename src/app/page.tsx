@@ -4,8 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import FrenchWidget from '@/components/widgets/FrenchWidget';
 import FrenchNewsWidget from '@/components/widgets/FrenchNewsWidget';
 
-// Low Power Mode detection
+// Runtime display profile flags
 const LOW_POWER = process.env.NEXT_PUBLIC_LOW_POWER === 'true';
+const DASHBOARD_VARIANT = process.env.NEXT_PUBLIC_DASHBOARD_VARIANT || '4k';
+const IS_1080 = DASHBOARD_VARIANT.toLowerCase() === '1080p';
 
 // Pi mode detection (Raspberry Pi or low-power device)
 const isPiMode = () => {
@@ -24,13 +26,14 @@ const COLORS = {
   critical: '#FFB4AB',
 };
 
-// Clock component - LARGE for display
+// Clock component - LARGE for display but balanced
 function Clock() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    // In low power mode, only update every second for seconds, not needed for display
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const hours = time.getHours();
@@ -40,13 +43,13 @@ function Clock() {
   const displayHours = hours % 12 || 12;
 
   return (
-    <span className="font-mono text-8xl tracking-tight font-medium">
+    <span className="font-mono text-6xl tracking-tight font-medium">
       {displayHours}:{String(minutes).padStart(2, '0')} {ampm}
     </span>
   );
 }
 
-// Date component
+// Date component - COMPACT
 function DateDisplay() {
   const [date, setDate] = useState(new Date());
 
@@ -62,10 +65,10 @@ function DateDisplay() {
     year: 'numeric',
   });
 
-  return <span className="text-3xl font-medium">{dateStr}</span>;
+  return <span className="text-2xl font-medium">{dateStr}</span>;
 }
 
-// Header stocks widget
+// Header stocks widget - COMPACT
 function HeaderStocksWidget() {
   const [stocks, setStocks] = useState<any[]>([]);
 
@@ -85,7 +88,7 @@ function HeaderStocksWidget() {
   }, []);
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-4">
       {(['SPY', 'QQQ', 'DIA'] as const).map(sym => {
         const stock = stocks.find(s => s.symbol === sym);
         const label = sym === 'SPY' ? 'S&P' : sym === 'QQQ' ? 'NAS' : 'DOW';
@@ -93,9 +96,9 @@ function HeaderStocksWidget() {
         const isUp = Number(stock.changePct) >= 0;
         return (
           <div key={sym} className="text-right">
-            <div className="text-lg text-white/50">{label}</div>
-            <div className="text-xl font-mono">${Number(stock.price).toFixed(0)}</div>
-            <div className={`text-sm ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+            <div className="text-sm text-white/50">{label}</div>
+            <div className="text-lg font-mono">${Number(stock.price).toFixed(0)}</div>
+            <div className={`text-xs ${isUp ? 'text-green-400' : 'text-red-400'}`}>
               {isUp ? '↑' : '↓'} {Math.abs(Number(stock.changePct)).toFixed(1)}%
             </div>
           </div>
@@ -105,7 +108,7 @@ function HeaderStocksWidget() {
   );
 }
 
-// Weather widget - LARGE
+// Weather widget - COMPACT but informative
 function WeatherWidget() {
   const [weather, setWeather] = useState<any>(null);
 
@@ -122,7 +125,7 @@ function WeatherWidget() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!weather) return <span className="text-2xl text-white/50">Loading...</span>;
+  if (!weather) return <span className="text-xl text-white/50">Loading...</span>;
 
   const iconMap: Record<string, string> = {
     '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
@@ -133,30 +136,30 @@ function WeatherWidget() {
   };
 
   return (
-    <div className="flex items-center gap-8">
+    <div className="flex items-center gap-4">
       {/* Current conditions */}
-      <div className="flex items-center gap-6">
-        <span className="text-7xl">{iconMap[weather.icon] || '🌡️'}</span>
+      <div className="flex items-center gap-4">
+        <span className="text-5xl">{iconMap[weather.icon] || '🌡️'}</span>
         <div>
-          <div className="text-5xl font-medium">{weather.temp}°F</div>
-          <div className="text-2xl text-white/60">{weather.description}</div>
-          <div className="text-lg text-white/40">{weather.city}</div>
+          <div className="text-4xl font-medium">{weather.temp}°F</div>
+          <div className="text-lg text-white/60">{weather.description}</div>
+          <div className="text-sm text-white/40">{weather.city}</div>
         </div>
       </div>
 
       {/* Vertical separator */}
-      <div className="h-20 w-px bg-white/20 mx-4"></div>
+      <div className="h-14 w-px bg-white/20 mx-2"></div>
 
-      {/* 7-day forecast */}
+      {/* 5-day forecast - compact */}
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           {weather.forecast.slice(0, 5).map((day: any, i: number) => (
-            <div key={i} className="flex flex-col items-center gap-2 min-w-[70px]">
-              <div className="text-lg text-white/50">{day.day}</div>
-              <div className="text-3xl">{iconMap[day.icon] || '🌡️'}</div>
-              <div className="text-xl text-white">
+            <div key={i} className="flex flex-col items-center gap-1 min-w-[50px]">
+              <div className="text-xs text-white/50">{day.day}</div>
+              <div className="text-2xl">{iconMap[day.icon] || '🌡️'}</div>
+              <div className="text-sm text-white">
                 <span className="text-white/60">{day.low}°</span>
-                <span className="mx-1">/</span>
+                <span className="mx-0.5">/</span>
                 <span>{day.high}°</span>
               </div>
             </div>
@@ -242,6 +245,102 @@ function TopStoriesWidget({ expanded = false }: { expanded?: boolean }) {
         {visible.length === 0 && (
           <div className="text-2xl text-white/40">Loading stories…</div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// World Cup Countdown Ticker - Shows countdown to 2026 FIFA World Cup
+function WorldCupCountdown() {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number; isPast: boolean } | null>(null);
+  
+  // 2026 FIFA World Cup kickoff: June 11, 2026, 5:00 PM ET (17:00 EST)
+  // Using Eastern Time for consistent US-based countdown
+  const WORLD_CUP_START = new Date('2026-06-11T17:00:00-04:00').getTime();
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const diff = WORLD_CUP_START - now;
+      
+      if (diff <= 0) {
+        return { days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true };
+      }
+      
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        isPast: false
+      };
+    };
+
+    // Calculate immediately
+    setTimeLeft(calculateTimeLeft());
+    
+    // Update every second
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!timeLeft) return null;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  if (timeLeft.isPast) {
+    return (
+      <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl p-4 mt-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white">🏆 WORLD CUP IS HERE! 🏆</div>
+          <div className="text-lg text-white/90">The 2026 FIFA World Cup has kicked off!</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#2B2930] rounded-2xl p-4 mt-4 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">⚽</span>
+          <div>
+            <div className="text-lg text-white/60">FIFA World Cup 2026</div>
+            <div className="text-sm text-white/40">USA • Canada • Mexico</div>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <div className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[50px]">
+              <div className="text-2xl font-mono font-bold text-white">{timeLeft.days}</div>
+            </div>
+            <div className="text-xs text-white/50 mt-1">DAYS</div>
+          </div>
+          <div className="text-xl text-white/30 self-center">:</div>
+          <div className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[50px]">
+              <div className="text-2xl font-mono font-bold text-white">{pad(timeLeft.hours)}</div>
+            </div>
+            <div className="text-xs text-white/50 mt-1">HRS</div>
+          </div>
+          <div className="text-xl text-white/30 self-center">:</div>
+          <div className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[50px]">
+              <div className="text-2xl font-mono font-bold text-white">{pad(timeLeft.minutes)}</div>
+            </div>
+            <div className="text-xs text-white/50 mt-1">MIN</div>
+          </div>
+          <div className="text-xl text-white/30 self-center">:</div>
+          <div className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[50px]">
+              <div className="text-2xl font-mono font-bold text-green-400">{pad(timeLeft.seconds)}</div>
+            </div>
+            <div className="text-xs text-white/50 mt-1">SEC</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -480,6 +579,9 @@ function SportsColumn() {
           <LatestScoresWidget />
         </div>
       </div>
+
+      {/* World Cup Countdown */}
+      <WorldCupCountdown />
     </div>
   );
 }
@@ -608,9 +710,11 @@ function NewsColumn() {
   );
 }
 
-// News Ticker - Continuous scrolling chyron
+// News Ticker - Optimized for low-performance hardware (Raspberry Pi)
 function NewsTicker() {
   const [news, setNews] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const isLowPower = LOW_POWER || isPiMode();
 
   const fetchData = () => {
     fetch('/api/news')
@@ -622,40 +726,69 @@ function NewsTicker() {
           setNews(data.items)
         }
       })
-      .catch((e) => console.error('Sports fetch error:', e));
+      .catch((e) => console.error('News fetch error:', e));
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, LOW_POWER ? 10 * 60 * 1000 : 5 * 60 * 1000); // Refresh every 5-10 minutes
+    // Low power: refresh less frequently (10 min), Normal: 5 min
+    const interval = setInterval(fetchData, isLowPower ? 10 * 60 * 1000 : 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isLowPower]);
+
+  // Low power: auto-rotate headlines without animation (reduces GPU load)
+  // Use requestAnimationFrame-free interval for minimal CPU usage
+  useEffect(() => {
+    if (!isLowPower || news.length === 0) return;
+    
+    // Simple interval rotation instead of CSS animation (much lower CPU/GPU usage)
+    // Increased interval to 12 seconds in low power for even less churn
+    const rotationInterval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % news.length);
+    }, isLowPower ? 12000 : 8000);
+    
+    return () => clearInterval(rotationInterval);
+  }, [isLowPower, news.length]);
 
   if (news.length === 0) {
     return (
-      <div className="news-ticker border-t-2 h-20 px-8 flex items-center" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
-        <span className="text-2xl text-white/50">Loading breaking news…</span>
+      <div className="news-ticker border-t-2 h-14 px-6 flex items-center" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
+        <span className="text-xl text-white/50">Loading breaking news…</span>
       </div>
     );
   }
 
-  const text = news.join('  •  ');
-
-  if (LOW_POWER) {
-    // Static ticker for low power mode
+  if (isLowPower) {
+    // Low-power mode: static display with periodic rotation, no animation
+    // Uses no GPU-accelerated properties at all - pure DOM updates only
+    const displayText = news.length > 1 
+      ? `${news[currentIndex]}  •  ${news[(currentIndex + 1) % news.length]}`
+      : news[0];
+    
     return (
-      <div className="bg-[#2A1212] border-t-2 border-red-500/30 h-16 px-8 flex items-center overflow-hidden">
-        <div className="text-lg text-white/80 truncate">
-          {text}
+      <div 
+        className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-14 px-6 flex items-center overflow-hidden"
+        style={{ 
+          // No will-change, no transform - pure simplicity for Pi
+        }}
+      >
+        <div 
+          className="text-lg text-white/90 whitespace-nowrap"
+          style={{ 
+            // No transitions, no animations - instant switch
+          }}
+        >
+          {displayText}
         </div>
       </div>
     );
   }
 
-  // Animated ticker for normal mode
+  // Normal mode: GPU-accelerated CSS animation
+  const text = news.join('  •  ');
   return (
     <div className="news-ticker bg-[#2A1212] border-t-2 border-red-500/30 h-16 px-8 flex items-center overflow-hidden ticker">
-      <div className="ticker-track">
+      <div className="ticker-track" style={{ willChange: 'transform' }}>
         <span className="ticker-text">{text}</span>
         <span className="ticker-sep">•</span>
         <span className="ticker-text">{text}</span>
@@ -726,27 +859,27 @@ export default function Dashboard() {
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className={`h-screen flex flex-col overflow-hidden ${IS_1080 ? 'dashboard-1080' : ''}`}
       style={{ backgroundColor: COLORS.background, color: '#FFF' }}
     >
-      {/* Header - LARGE */}
-      <header className="flex-none grid grid-cols-4 items-center px-8 py-6 border-b-2" style={{ borderColor: 'var(--outline)' }}>
-        <div className="flex justify-start">
+      {/* Header - OPTIMIZED for space balance with compact sizing */}
+      <header className="flex-none grid grid-cols-4 items-center px-4 py-3 gap-3 border-b-2" style={{ borderColor: 'var(--outline)' }}>
+        <div className="flex justify-start items-center">
           <DateDisplay />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center">
           <Clock />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center">
           <HeaderStocksWidget />
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center">
           <WeatherWidget />
         </div>
       </header>
 
-      {/* Main Grid - 4 Columns */}
-      <main className="flex-1 overflow-hidden grid gap-6 px-8 pt-8 pb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      {/* Main Grid - 4 Columns - COMPACT padding */}
+      <main className="flex-1 overflow-hidden grid gap-4 px-4 pt-4 pb-20" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {/* Column 1: Sports + Latest Scores */}
         <section className="h-full min-h-0">
           <SportsColumn />
